@@ -144,7 +144,7 @@ class HanSegJieba:
         return list(words)
         
     def pos(self, text: str) -> List[Tuple[str, str]]:
-        return [list(i) for i in pseg.lcut(text, HMM=self.HMM)]
+        return [tuple(i) for i in pseg.lcut(text, HMM=self.HMM)]
         
     def add_word(self, word: str, freq: int = 1, flag: str = None):
         jieba.add_word(word, freq, flag)
