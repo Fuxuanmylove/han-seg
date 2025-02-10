@@ -12,7 +12,7 @@ global:
 jieba:
   engine_name: "jieba"
   HMM: true
-  filt: false
+  filt: true
   tune: true
   topK: 20
   withWeight: false
@@ -31,7 +31,7 @@ thulac:
   stop_words: "user_data/stop_words.txt"
   t2s: false
   seg_only: false
-  filt: false
+  filt: true
   max_length: 50000
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
@@ -43,6 +43,8 @@ pkuseg:
   engine_name: "pkuseg"
   model_name: "default"
   user_dict: "default"
+  stop_words: "user_data/stop_words.txt"
+  filt: true
   postag: true
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""

@@ -10,7 +10,7 @@ def check_and_get_stop_words(config: dict) -> Set[str]:
     """
     Check if the stop words file exists, and return the set of stop words.
     """
-    stop_words_path = config.get('stop_words_path', '')
+    stop_words_path = config.get('stop_words', '')
     if not stop_words_path:
         raise HanSegError("Stop words file path is not specified in the config file when filt=true.")
     with open(stop_words_path, 'r', encoding='utf-8') as f:

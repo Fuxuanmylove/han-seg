@@ -92,7 +92,9 @@ class HanSegJieba(HanSegBase):
         return list(words)
         
     def pos(self, text: str) -> List[Tuple[str, str]]:
-        return [tuple(i) for i in pseg.lcut(text, HMM=self.HMM)]
+        if self.filt:
+            return [(word, pos) for word, pos in pseg.cut(text, HMM=self.HMM) if word not in self.stop_words]
+        return [(word, pos) for word, pos in pseg.lcut(text, HMM=self.HMM)]
         
     def add_word(self, word: str, freq: int = 1, flag: str = None) -> None:
         jieba.add_word(word, freq, flag)
@@ -136,7 +138,7 @@ class HanSegThulac(HanSegBase):
 
     def keywords(self, text: str) -> List[str]:
         if self.multi_engines:
-            logger.info("Multi-engine mode is enabled. Using jieba to extract keywordss.")
+            logger.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
             processed_text = ' '.join(self.cut(text))
             if self.keywords_method == 'tfidf':
                 return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
@@ -180,7 +182,7 @@ class HanSegPkuseg(HanSegBase):
 
     def keywords(self, text: str) -> List[str]:
         if self.multi_engines:
-            logger.info("Multi-engine mode is enabled. Using jieba to extract keywordss.")
+            logger.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
             processed_text = ' '.join(self.cut(text))
             if self.keywords_method == 'tfidf':
                 return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
