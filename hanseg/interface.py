@@ -1,8 +1,7 @@
 # hanseg/interface.py
 
-import os
-from typing import List, Tuple, Set
-from base import HanSegBase, HanSegError, check_and_get_stop_words, load_config, get_logger
+from .base import HanSegBase, HanSegError, check_and_get_stop_words, load_config, get_logger
+from typing import List, Tuple
 import jieba
 from jieba import analyse
 from jieba import posseg as pseg
@@ -15,21 +14,23 @@ logger = get_logger(log_config)
 
 class HanSeg:
 
-    def __init__(self, engine: str = 'jieba'):
+    def __init__(self, engine_name: str = 'jieba'):
         """
-        :param engine: 'jieba'/'thulac'/'pkuseg
+        :param engine: jieba / thulac / pkuseg
         """
         self.global_config = config.get('global', {})
-        self.multi_engines = self.global_config.get('multi_engines', True)
-        self.engine_name = engine.lower()
+        self.engine_name = engine_name.lower()
         if self.engine_name == 'jieba':
             local_config = config.get('jieba', {})
             self._engine = HanSegJieba(self.global_config, local_config)
         elif self.engine_name == 'thulac':
             local_config = config.get('thulac', {})
             self._engine = HanSegThulac(self.global_config, local_config)
+        elif self.engine_name == 'pkuseg':
+            local_config = config.get('pkuseg', {})
+            self._engine = HanSegPkuseg(self.global_config, local_config)
         else:
-            raise HanSegError(f"Engine '{engine}' is not supported. Supported engines: jieba, thulac.")
+            raise HanSegError(f"Engine '{engine_name}' is not supported. Supported engines: jieba, thulac, pkuseg.")
             
     def cut(self, text: str) -> List[str]:
         """
@@ -69,7 +70,9 @@ class HanSegJieba(HanSegBase):
         self.HMM = local_config.get('HMM', True)
         self.tune = local_config.get('tune', True)
         self.dictionary_path = local_config.get('dictionary', None)
-        jieba.set_dictionary(self.dictionary_path)
+        if self.dictionary_path:
+            jieba.set_dictionary(self.dictionary_path)
+
         jieba.load_userdict(self.user_dict_path)
 
         self.cut_mode = local_config.get('cut_mode', 'default').lower()
@@ -142,14 +145,14 @@ class HanSegThulac(HanSegBase):
         else:
             raise HanSegError("Multi-engine mode is disabled and thulac does not support keywords extract. You can set multi_engines=true in config.")
 
-class HanSegPKUSeg(HanSegBase):
+class HanSegPkuseg(HanSegBase):
     """Implementation based on pkuseg."""
     def __init__(self, global_config: dict = None, local_config: dict = None):
         from pkuseg import pkuseg
-
+        super().__init__(global_config, local_config)
+        
         self.model_name = local_config.get('model_name', 'default')
         self.postag = local_config.get('postag', True)
-        
         self._pkuseg = pkuseg(model_name=self.model_name, user_dict=self.user_dict_path, postag=self.postag)
 
         self.stop_words = set()

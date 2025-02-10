@@ -60,8 +60,11 @@ class HanSegBase:
         self.filt = self.local_config.get('filt', False)
 
         self.user_dict_path = self.local_config.get('user_dict', None)
-        if self.user_dict_path and not os.path.exists(self.user_dict_path):
-            raise HanSegError(f"User dictionary file {self.user_dict_path} not found.\nIf you don't need to set a user dict, leave user_dict an empty string in your config.")
+        if self.user_dict_path:
+            if not os.path.exists(self.user_dict_path) and not self.engine_name == 'pkuseg':
+                raise HanSegError(f"User dictionary file {self.user_dict_path} not found.\nIf you don't need to set a user dict, leave user_dict an empty string in your config.")
+            elif self.engine_name == 'pkuseg' and self.user_dict_path is not None:
+                self.user_dict_path = 'default'
 
         self.stop_words = set()
         if self.filt:

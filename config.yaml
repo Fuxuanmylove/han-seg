@@ -18,8 +18,8 @@ jieba:
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
   dictionary: "" # empty string if not needed
-  user_dict: "./user_data/user_dict.txt" # empty string if not needed
-  stop_words: "./user_data/stop_words.txt" # empty string if not needed
+  user_dict: "user_data/user_dict.txt" # empty string if not needed
+  stop_words: "user_data/stop_words.txt" # empty string if not needed
   idf_path: ""
   keywords_method: "textrank" # textrank or tfidf
   cut_mode: "default" # default / full / search
@@ -27,8 +27,8 @@ jieba:
 thulac:
   engine_name: "thulac"
   model_path: ""
-  user_dict: "./user_data/user_dict.txt"
-  stop_words: "./user_data/stop_words.txt"
+  user_dict: "user_data/user_dict.txt"
+  stop_words: "user_data/stop_words.txt"
   t2s: false
   seg_only: false
   filt: false
