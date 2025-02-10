@@ -5,6 +5,8 @@ from jieba import analyse
 import os
 import yaml
 import logging
+from snownlp import SnowNLP
+
 
 def check_and_get_stop_words(config: dict) -> Set[str]:
     """
@@ -117,7 +119,10 @@ class HanSegBase:
         raise HanSegError("Multi-engine mode is disabled and thulac does not support keywords extract. You can set multi_engines=true in config.")
 
     def sentiment_analysis(self, text: str) -> float:
-        raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
+        if self.multi_engines:
+            logging.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
+            return SnowNLP(text).sentiments
+        raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method. You can set multi_engines=true in config.")
     
     def cut_file(self, input_path: str, output_path: str) -> None:
         with open(input_path, 'r', encoding='utf-8') as f_in, \

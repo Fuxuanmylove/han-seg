@@ -55,10 +55,7 @@ class HanSegPkuseg(HanSegBase):
         super().keywords(text)
         
     def sentiment_analysis(self, text: str) -> float:
-        if self.multi_engines:
-            logging.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
-            return SnowNLP(text).sentiments
-        raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method. You can set multi_engines=true in config.")
+        super().sentiment_analysis(text)
     
     def _reload_engine(self) -> None:
         self._pkuseg = pkuseg(
