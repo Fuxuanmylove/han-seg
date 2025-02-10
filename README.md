@@ -20,6 +20,11 @@ han-seg
     * 关键词提取 keywords
     * 情感分析 sentiment_analysis
     * 切分文件 cut_file
+    * 文本分类 待实现
+    * 拼音转换 待实现
+    * 繁体转简体 待实现
+    * 带位置信息的分词 待实现
+    * 文本相似度 待实现
 
 jieba引擎独有的suggest_freq功能，暂时无法在其他引擎基础上实现。
 
