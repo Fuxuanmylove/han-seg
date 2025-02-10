@@ -5,20 +5,22 @@ global:
   multi_engines: true # use other engines while using some method that is not supported by current engine
 
 jieba:
+  engine_name: "jieba"
   HMM: true
   filt: false
   tune: true
   topK: 20
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
-  dictionary: ""
-  user_dict: "./user_data/user_dict.txt" 
-  stop_words: "./user_data/stop_words.txt"
+  dictionary: "" # empty string if not needed
+  user_dict: "./user_data/user_dict.txt" # empty string if not needed
+  stop_words: "./user_data/stop_words.txt" # empty string if not needed
   idf_path: ""
-  keyword_extract_method: "textrank" # textrank or tfidf
+  keywords_method: "textrank" # textrank or tfidf
   cut_mode: "default" # default / full / search
 
 thulac:
+  engine_name: "thulac"
   model_path: ""
   user_dict: "./user_data/user_dict.txt"
   stop_words: "./user_data/stop_words.txt"
@@ -26,16 +28,18 @@ thulac:
   seg_only: false
   filt: false
   max_length: 50000
-  keyword_extract_method: "textrank" # textrank or tfidf
+  keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
   topK: 20
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
 
 pkuseg:
+  engine_name: "pkuseg"
   model_name: "default"
   user_dict: "default"
   postag: true
+  keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
   topK: 20
   withWeight: false
