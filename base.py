@@ -1,4 +1,4 @@
-# hanseg/base.py
+# base.py
 
 from typing import List, Tuple, Set
 from jieba import analyse
@@ -45,6 +45,11 @@ def get_logger(log_config: dict) -> logging.Logger:
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     return logger
+
+config = load_config("config.yaml")
+
+log_config = config.get('log', {'name': 'hanseg', 'level': 'info', 'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'})
+logger = get_logger(log_config)
 
 class HanSegBase:
     def __init__(self, global_config: dict = None, local_config: dict = None):

@@ -1,4 +1,4 @@
-from hanseg.interface import HanSeg
+from interface import HanSeg
 
 # 初始化thulac引擎
 seg1 = HanSeg(engine_name='jieba')
