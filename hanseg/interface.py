@@ -1,15 +1,27 @@
 # han_seg/interface.py
 
 import os
-from typing import List, Optional, Tuple
+from typing import List, Tuple, Set
 import yaml
 import jieba
 from jieba import analyse
-from jieba.analyse import textrank
 from jieba import posseg as pseg
-from thulac import thulac
-import pkuseg
+import logging
 from snownlp import SnowNLP
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+
+def check_and_get_stop_words(config: dict) -> Set[str]:
+    """
+    Check if the stop words file exists, and return the set of stop words.
+    """
+    stop_words_path = config.get('stop_words_path', '')
+    if not stop_words_path:
+        raise HanSegError("Stop words file path is not specified in the config file when filt=true.")
+    with open(stop_words_path, 'r', encoding='utf-8') as f:
+        stop_words = {line.strip() for line in f if line.strip()}
+    return stop_words_path, stop_words
 
 class HanSeg:
 
@@ -20,15 +32,14 @@ class HanSeg:
         """
         config = self._load_config(config_path)
         self.global_config = config.get('global', {})
-        self.multi_engines = self.global_config.get('multi-engines', True)
-        engine = engine.lower()
-        self.engine_name = engine
-        if engine == 'jieba':
-            engine_config = config.get('jieba', {})
-            self._engine = HanSegJieba(engine_config)
-        elif engine == 'thulac':
-            engine_config = config.get('thulac', {})
-            self._engine = HanSegThulac(engine_config)
+        self.multi_engines = self.global_config.get('multi_engines', True)
+        self.engine_name = engine.lower()
+        if self.engine_name == 'jieba':
+            local_config = config.get('jieba', {})
+            self._engine = HanSegJieba(self.global_config, local_config)
+        elif self.engine_name == 'thulac':
+            local_config = config.get('thulac', {})
+            self._engine = HanSegThulac(self.global_config, local_config)
         else:
             raise HanSegError(f"Engine '{engine}' is not supported. Supported engines: jieba, thulac.")
             
@@ -71,13 +82,9 @@ class HanSeg:
         return config
     
 class HanSegJieba:
-    """
-    Implementation based on jieba.
-    """
-    def __init__(self, local_config: dict = None):
-        """
-        Initialize jieba with config.
-        """
+    """Implementation based on jieba."""
+    def __init__(self, global_config: dict = None, local_config: dict = None):
+        self.global_config = global_config or {}
         self.local_config = local_config or {}
         self.HMM = local_config.get('HMM', True)
         self.filt = local_config.get('filt', False)
@@ -100,19 +107,10 @@ class HanSegJieba:
                 raise HanSegError(f"User dictionary file {self.user_dict_path} not found.\nIf you don't need to set a user dictionary, leave user_dict an empty string in your config.")
             jieba.load_userdict(self.user_dict_path)
 
-        self.stop_words_path = local_config.get('stop_words', None)
         self.stop_words = set()
         if self.filt:
-            if not self.stop_words_path:
-                raise HanSegError("stop_words_path must be provided in your config when filt is True.")
-            if not os.path.exists(self.stop_words_path):
-                raise HanSegError(f"Stop words file {self.stop_words_path} not found.\nIf you don't need to set a stop words file, leave stop_words an empty string in your config.")
-            with open(self.stop_words_path, 'r', encoding='utf-8') as f:
-                for line in f:
-                    word = line.strip()
-                    if word:
-                        self.stop_words.add(word)
-            analyse.set_stop_words(self.stop_words_path)
+            stop_words_path, self.stop_words = check_and_get_stop_words(local_config)
+            analyse.set_stop_words(stop_words_path)
 
         self.keyword_extract_method = self.local_config.get('keyword_extract_method', '').lower()
         if self.keyword_extract_method not in ('tfidf', 'textrank'):
@@ -129,9 +127,6 @@ class HanSegJieba:
             analyse.set_idf_path(self.idf_path)
 
     def cut(self, text: str) -> List[str]:
-        """
-        Use jieba's three modes to cut text into words.
-        """
         if self.cut_mode == 'default':
             words = jieba.cut(text, HMM=self.HMM)
         elif self.cut_mode == 'full':
@@ -162,10 +157,11 @@ class HanSegJieba:
             return analyse.textrank(text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
 
 class HanSegThulac:
-    """
-    Implementation based on thulac.
-    """
-    def __init__(self, local_config: dict = None):
+    """Implementation based on thulac."""
+    def __init__(self, global_config: dict = None, local_config: dict = None):
+        from thulac import thulac
+        self.multi_engines = global_config.get('multi_engines', True)
+        self.global_config = global_config or {}
         self.local_config = local_config or {}
         model_path = self.local_config.get('model_path', None)
         if not model_path:
@@ -179,18 +175,9 @@ class HanSegThulac:
         self._thulac = thulac(model_path=model_path, seg_only=self.seg_only, T2S=self.t2s, user_dict=self.user_dict)
         self.stop_words = set()
         if self.filt:
-            stop_words_path = self.local_config.get('stop_words', None)
-            if not stop_words_path:
-                raise HanSegError("stop_words_path must be provided in your config when filt is True.")
-            
-            if not os.path.exists(stop_words_path):
-                raise HanSegError(f"Stop words file {stop_words_path} not found.\nIf you don't need to set stop words, leave stop_words an empty string in your config.")
-            with open(stop_words_path, 'r', encoding='utf-8') as f:
-                for line in f:
-                    word = line.strip()
-                    if word:
-                        self.stop_words.add(word)
-            analyse.set_stop_words(stop_words_path)
+            stop_words_path, self.stop_words = check_and_get_stop_words(local_config)
+            if self.multi_engines:
+                analyse.set_stop_words(stop_words_path)
         
         self.keyword_extract_method = self.local_config.get('keyword_extract_method', '').lower()
         if self.keyword_extract_method not in ('tfidf', 'textrank'):
@@ -202,7 +189,7 @@ class HanSegThulac:
         self.allowPOS = tuple(self.allowPOS_config.split()) if self.allowPOS_config else ()
 
         self.idf_path = self.local_config.get('idf_path', None)
-        if self.keyword_extract_method == 'tfidf' and self.idf_path:
+        if self.keyword_extract_method == 'tfidf' and self.idf_path and self.multi_engines:
             if not os.path.exists(self.idf_path):
                 raise HanSegError(f"IDF file {self.idf_path} not found.\nIf you don't need to set IDF, leave idf_path an empty string in your config.")
             analyse.set_idf_path(self.idf_path)
@@ -235,13 +222,38 @@ class HanSegThulac:
         raise HanSegError("thulac engine does not support dynamically deleting words.")
 
     def keyword_extract(self, text: str) -> List[str]:
-        words = self.cut(text)
-        processed_text = ' '.join(words)
-        if self.keyword_extract_method == 'tfidf':
-            return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
-        elif self.keyword_extract_method == 'textrank':
-            return analyse.textrank(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+        if self.multi_engines:
+            logging.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
+            words = self.cut(text)
+            processed_text = ' '.join(words)
+            if self.keyword_extract_method == 'tfidf':
+                return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+            elif self.keyword_extract_method == 'textrank':
+                return analyse.textrank(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+        else:
+            raise HanSegError("Multi-engine mode is disabled and thulac does not support keyword extract. You can enable it by setting multi_engines=true in config.")
 
+class HanSegPKUSeg:
+    """Implementation based on pkuseg."""
+    def __init__(self, global_config: dict = None, local_config: dict = None):
+        from pkuseg import pkuseg
+        self.global_config = global_config or {}
+        self.local_config = local_config or {}
+        
+        self.multi_engines = global_config.get('multi_engines', True)
+        self.model_name = local_config.get('model_name', 'default')
+        self.user_dict = local_config.get('user_dict', 'default')
+        self.postag = local_config.get('postag', True)
+        self.filt = local_config.get('filt', False)
+        
+        self.seg = pkuseg(model_name=self.model_name, user_dict=self.user_dict, postag=self.postag)
+
+        self.stop_words = set()
+        if self.filt:
+            stop_words_path, self.stop_words = check_and_get_stop_words(local_config)
+            if self.multi_engines:
+                analyse.set_stop_words(stop_words_path)
+            
+        
 class HanSegError(Exception):
     pass
-        
