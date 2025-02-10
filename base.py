@@ -104,10 +104,32 @@ class HanSegBase:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
     def add_word(self, word: str, freq: int = 1, flag: str = None) -> None:
-        raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
+        if self.engine_name != 'snownlp':
+            word = word.strip()
+            flag = flag.strip() if flag else None
+            if word:
+                line = f"{word} {flag}" if flag else word
+                with open(self.user_dict_path, 'a', encoding='utf-8') as f:
+                    f.write(f"\n{line}\n")
+                    self._reload_engine()
+        else:
+            raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
     def del_word(self, word: str) -> None:
-        raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
+        if self.engine_name != 'snownlp':
+            with open(self.user_dict_path, 'r', encoding='utf-8') as f:
+                lines = []
+                for line in f:
+                    lst = line.split()
+                    if lst and lst[0] != word:
+                        lines.append(line)
+                        
+            with open(self.user_dict_path, 'w', encoding='utf-8') as f:
+                f.writelines(lines)
+                
+            self._reload_engine()
+        else:
+            raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
     def suggest_freq(self, words) -> None:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")

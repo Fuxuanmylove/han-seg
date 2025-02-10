@@ -12,6 +12,18 @@ han-seg
 
 目前已大致完成jieba，thulac，pkuseg与snownlp的统一。
 
+主要功能
+========
+    * 标准分词 cut
+    * 词性标注 pos
+    * 关键词提取 keywords
+    * 情感分析 sentiment_analysis
+    * 切分文件 cut_file
+
+jieba引擎独有的suggest_freq功能，暂时无法在其他引擎基础上实现。
+
+对于关键词提取功能，由于仅有jieba与snownlp拥有这一功能，因此在使用thu和pku引擎时，会根据用户的配置使用jieba的关键词提取功能
+
 下载
 ========
 由于项目尚未完成，依赖尚不明确，建议下载项目源码压缩文件并在根目录创建所需文件。
@@ -56,6 +68,18 @@ def test():
     print(seg2.sentiment_analysis(text))
     print(seg3.sentiment_analysis(text))
     print(seg4.sentiment_analysis(text))
+    
+    print("增加单词")
+    # seg1.add_word("紫色心情") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
+    seg2.add_word("紫色心情")
+    seg3.add_word("紫色心情")
+
+    print("删除单词")
+    # seg1.del_word("紫色心情") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
+    seg2.del_word("紫色心情")
+    seg3.del_word("紫色心情")
+    
+    # SnowNLP不支持增加或者删除单词
 
     print("切分文件")
     seg1.cut_file("input_file.txt", "output_file.txt")

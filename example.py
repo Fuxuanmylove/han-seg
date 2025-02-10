@@ -37,6 +37,18 @@ def test():
     print(seg2.sentiment_analysis(text))
     print(seg3.sentiment_analysis(text))
     print(seg4.sentiment_analysis(text))
+    
+    print("增加单词")
+    # seg1.add_word("紫色心情") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
+    seg2.add_word("紫色心情")
+    seg3.add_word("紫色心情")
+
+    print("删除单词")
+    # seg1.del_word("紫色心情") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
+    seg2.del_word("紫色心情")
+    seg3.del_word("紫色心情")
+    
+    # SnowNLP不支持增加或者删除单词
 
     print("切分文件")
     seg1.cut_file("input_file.txt", "output_file.txt")

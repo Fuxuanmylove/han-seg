@@ -40,13 +40,7 @@ class HanSegPkuseg(HanSegBase):
         if self.user_dict_path == 'default':
             raise HanSegError("You cannot modify the default user_dict.")
         
-        word = word.strip()
-        flag = flag.strip() if flag else None
-        with open(self.user_dict_path, 'a', encoding='utf-8') as f:
-            line = f"{word} {flag}" if flag else word
-            f.write(line + '\n')
-            
-        self._reload_engine()
+        super().add_word(word, freq, flag)
 
     def del_word(self, word: str) -> None:
         if not self.user_dict_path:
@@ -55,13 +49,7 @@ class HanSegPkuseg(HanSegBase):
         if self.user_dict_path == 'default':
             raise HanSegError("You cannot modify the default user_dict.")
         
-        with open(self.user_dict_path, 'r', encoding='utf-8') as f:
-            lines = [l for l in f if l.split()[0] != word]
-
-        with open(self.user_dict_path, 'w', encoding='utf-8') as f:
-            f.writelines(lines)
-        
-        self._reload_engine()
+        super().del_word(word)
 
     def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
         if self.multi_engines:
