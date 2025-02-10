@@ -6,15 +6,6 @@ import os
 import yaml
 import logging
 
-global_processor = None
-
-def init_worker(processor):
-    global global_processor
-    global_processor = processor
-    
-def worker_process(lines):
-    return [' '.join(global_processor.cut(line)) + '\n' for line in lines]
-
 def check_and_get_stop_words(config: dict) -> Set[str]:
     """
     Check if the stop words file exists, and return the set of stop words.
@@ -33,27 +24,6 @@ def load_config(config_path: str) -> dict:
     with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
     return config
-
-def get_logger(log_config: dict) -> logging.Logger:
-    """
-    Get logger from config.
-    """
-    LEVEL_DICT = {
-        'debug': logging.DEBUG,
-        'info': logging.INFO,
-        'warning': logging.WARNING,
-        'error': logging.ERROR,
-        'critical': logging.CRITICAL
-    }
-    logger = logging.getLogger(log_config.get('name', 'hanseg'))
-    log_level = LEVEL_DICT.get(log_config.get('level', 'info').lower(), logging.INFO)
-    logger.setLevel(log_level)
-    log_format = log_config.get('format', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    formatter = logging.Formatter(log_format)
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-    return logger
 
 
 class HanSegBase:
@@ -96,6 +66,8 @@ class HanSegBase:
             self.idf_path = self.local_config.get('idf_path', None)
             if self.keywords_method == 'tfidf' and self.idf_path and (self.multi_engines or self.engine_name == 'jieba'):
                 analyse.set_idf_path(self.idf_path)
+     
+        self.batch_size = self.global_config.get('cut_file_batch_size', 100)
 
     def cut(self, text: str) -> List[str]:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
@@ -135,21 +107,33 @@ class HanSegBase:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
     def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
-        raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
+        if self.multi_engines:
+            logging.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
+            processed_text = ' '.join(self.cut(text))
+            if self.keywords_method == 'tfidf':
+                return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+            elif self.keywords_method == 'textrank':
+                return analyse.textrank(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+        raise HanSegError("Multi-engine mode is disabled and thulac does not support keywords extract. You can set multi_engines=true in config.")
 
     def sentiment_analysis(self, text: str) -> float:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
     
     def cut_file(self, input_path: str, output_path: str) -> None:
-
-        with open(input_path, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-            
-        with open(output_path, 'w', encoding='utf-8') as f:
-            for line in lines:
+        with open(input_path, 'r', encoding='utf-8') as f_in, \
+            open(output_path, 'w', encoding='utf-8') as f_out:
+            batch = []
+            for line in f_in:
                 line = line.strip()
                 if line:
-                    f.write(' '.join(self.cut(line)) + '\n')
+                    batch.append(line)
+                    if len(batch) >= self.batch_size:
+                        processed = [' '.join(self.cut(l)) + '\n' for l in batch]
+                        f_out.writelines(processed)
+                        batch = []
+            if batch:
+                processed = [' '.join(self.cut(l)) + '\n' for l in batch]
+                f_out.writelines(processed)
 
     def _reload_engine(self) -> None:
         raise NotImplementedError

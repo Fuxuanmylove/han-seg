@@ -44,14 +44,7 @@ class HanSegThulac(HanSegBase):
         super().del_word(word)
 
     def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
-        if self.multi_engines:
-            logging.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
-            processed_text = ' '.join(self.cut(text))
-            if self.keywords_method == 'tfidf':
-                return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
-            elif self.keywords_method == 'textrank':
-                return analyse.textrank(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
-        raise HanSegError("Multi-engine mode is disabled and thulac does not support keywords extract. You can set multi_engines=true in config.")
+        super().keywords(text)
 
     def sentiment_analysis(self, text: str) -> float:
         if self.multi_engines:

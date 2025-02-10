@@ -1,7 +1,7 @@
 # interface.py
 
-from base import HanSegBase, HanSegError, load_config, get_logger
-from typing import List, Tuple, Dict
+from base import HanSegBase, HanSegError, load_config
+from typing import List, Tuple, Dict, Union
 from engines.jieba_engine import HanSegJieba
 from engines.thulac_engine import HanSegThulac
 from engines.pkuseg_engine import HanSegPkuseg
@@ -53,12 +53,12 @@ class HanSeg:
         """Only for jieba"""
         self._engine.suggest_freq(words)
 
-    def keywords(self, text: str):
+    def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
         """
         Keywordss extract method, return a list of keywordss or (keywords, weight) tuples, depends on the config.
         """
         return self._engine.keywords(text)
-    
+
     def sentiment_analysis(self, text: str) -> float:
         """Only for snownlp"""
         return self._engine.sentiment_analysis(text)

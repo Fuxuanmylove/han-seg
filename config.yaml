@@ -1,13 +1,9 @@
 # You can modify the following configuration as needed, but don't delete any lines.
 # For the file path, if you don't need to set it, just make it an empty string.
 
-log:
-  name: "hanseg"
-  level: "info" # debug / info / warning / error / critical
-  log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-
 global:
   multi_engines: true # use other engines while using some method that is not supported by current engine
+  cut_file_batch_size: 100
 
 jieba:
   engine_name: "jieba"
