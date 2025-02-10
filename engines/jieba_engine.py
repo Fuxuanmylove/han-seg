@@ -7,7 +7,7 @@ from base import HanSegBase, HanSegError
 
 class HanSegJieba(HanSegBase):
     """Implementation based on jieba."""
-    def __init__(self, global_config: dict = None, local_config: dict = None):
+    def __init__(self, global_config: dict = {}, local_config: dict = {}):
         
         super().__init__(global_config, local_config)
         self.HMM = local_config.get('HMM', True)

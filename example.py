@@ -4,12 +4,14 @@ from interface import HanSeg
 seg1 = HanSeg(engine_name='jieba')
 seg2 = HanSeg(engine_name='thulac')
 seg3 = HanSeg(engine_name='pkuseg')
-text = "今天天气真好，适合出去散步。"
+seg4 = HanSeg(engine_name='snownlp')
+text = "今天天气真好，适合出去散步。如果花火小姐是我的老婆，那么我将十分富有，这样我就再也不用打工了。"
 
 # 分词
 print(seg1.cut(text))
 print(seg2.cut(text))
 print(seg3.cut(text))
+print(seg4.cut(text))
 
 # 词性标注
 print(seg1.pos(text))
@@ -20,3 +22,4 @@ print(seg3.pos(text))
 print(seg1.keywords(text))
 print(seg2.keywords(text))
 print(seg3.keywords(text))
+print(seg4.keywords(text))

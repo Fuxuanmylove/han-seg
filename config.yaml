@@ -14,7 +14,7 @@ jieba:
   HMM: true
   filt: true
   tune: true
-  topK: 20
+  topK: 5
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
   dictionary: "" # empty string if not needed
@@ -35,7 +35,7 @@ thulac:
   max_length: 50000
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
-  topK: 20
+  topK: 5
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
 
@@ -48,6 +48,12 @@ pkuseg:
   postag: true
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
-  topK: 20
+  topK: 5
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
+
+snownlp:
+  engine_name: "snownlp"
+  stop_words: "user_data/stop_words.txt"
+  filt: true
+  topK: 5

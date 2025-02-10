@@ -52,7 +52,7 @@ log_config = config.get('log', {'name': 'hanseg', 'level': 'info', 'format': '%(
 logger = get_logger(log_config)
 
 class HanSegBase:
-    def __init__(self, global_config: dict = None, local_config: dict = None):
+    def __init__(self, global_config: dict = {}, local_config: dict = {}):
 
         self.global_config = global_config or {}
         self.local_config = local_config or {}
@@ -64,31 +64,34 @@ class HanSegBase:
         self.multi_engines = global_config.get('multi_engines', True)
         self.filt = self.local_config.get('filt', False)
 
-        self.user_dict_path = self.local_config.get('user_dict', None)
-        if self.user_dict_path:
-            if not os.path.exists(self.user_dict_path) and not self.engine_name == 'pkuseg':
-                raise HanSegError(f"User dictionary file {self.user_dict_path} not found.\nIf you don't need to set a user dict, leave user_dict an empty string in your config.")
-            elif self.engine_name == 'pkuseg' and self.user_dict_path is not None:
-                self.user_dict_path = 'default'
+        if self.engine_name != 'snownlp':
+            self.user_dict_path = self.local_config.get('user_dict', None)
+            if self.user_dict_path:
+                if not os.path.exists(self.user_dict_path) and not self.engine_name == 'pkuseg':
+                    raise HanSegError(f"User dictionary file {self.user_dict_path} not found.\nIf you don't need to set a user dict, leave user_dict an empty string in your config.")
+                elif self.engine_name == 'pkuseg' and self.user_dict_path is not None:
+                    self.user_dict_path = 'default'
 
         self.stop_words = set()
         if self.filt:
             stop_words_path, self.stop_words = check_and_get_stop_words(local_config)
             if self.multi_engines or self.engine_name == 'jieba':
                 analyse.set_stop_words(stop_words_path)
-
-        self.keywords_method = self.local_config.get('keywords_method', '').lower()
-        if self.keywords_method not in ('tfidf', 'textrank') and self.multi_engines:
-            raise HanSegError(f"You must set keywords_method to 'tfidf' or 'textrank' in your config.")
+                
         self.topK = self.local_config.get('topK', 20)
-        self.withWeight = self.local_config.get('withWeight', False)
-        
-        self.allowPOS_config = self.local_config.get('allowPOS', None)
-        self.allowPOS = tuple(self.allowPOS_config.split()) if self.allowPOS_config else ()
 
-        self.idf_path = self.local_config.get('idf_path', None)
-        if self.keywords_method == 'tfidf' and self.idf_path and (self.multi_engines or self.engine_name == 'jieba'):
-            analyse.set_idf_path(self.idf_path)
+        if self.engine_name != 'snownlp':
+            self.keywords_method = self.local_config.get('keywords_method', '').lower()
+            if self.keywords_method not in ('tfidf', 'textrank') and self.multi_engines:
+                raise HanSegError(f"You must set keywords_method to 'tfidf' or 'textrank' in your config.")
+
+            self.withWeight = self.local_config.get('withWeight', False)
+            self.allowPOS_config = self.local_config.get('allowPOS', None)
+            self.allowPOS = tuple(self.allowPOS_config.split()) if self.allowPOS_config else ()
+
+            self.idf_path = self.local_config.get('idf_path', None)
+            if self.keywords_method == 'tfidf' and self.idf_path and (self.multi_engines or self.engine_name == 'jieba'):
+                analyse.set_idf_path(self.idf_path)
             
     def cut(self, text: str) -> List[str]:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
@@ -106,6 +109,9 @@ class HanSegBase:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
     
     def keywords(self, text: str) -> List[str]:
+        raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
+    
+    def sentiment_analysis(self, text: str) -> float:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
             
             

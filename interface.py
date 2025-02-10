@@ -1,11 +1,18 @@
 # interface.py
 
-from base import HanSegError, load_config
-from typing import List, Tuple
+from base import HanSegBase, HanSegError, load_config
+from typing import List, Tuple, Dict
 from engines.jieba_engine import HanSegJieba
 from engines.thulac_engine import HanSegThulac
 from engines.pkuseg_engine import HanSegPkuseg
-# from engines.snownlp_engine import HanSegSnowNLP
+from engines.snownlp_engine import HanSegSnowNLP
+
+ENGINE_MAP: Dict[str, HanSegBase] = {
+    'jieba': HanSegJieba,
+    'thulac': HanSegThulac,
+    'pkuseg': HanSegPkuseg,
+    'snownlp': HanSegSnowNLP,
+}
 
 config = load_config("config.yaml")
 
@@ -13,22 +20,19 @@ class HanSeg:
 
     def __init__(self, engine_name: str = 'jieba'):
         """
-        :param engine: jieba / thulac / pkuseg
+        :param engine: jieba / thulac / pkuseg / snownlp
         """
         self.global_config = config.get('global', {})
-        self.engine_name = engine_name.lower()
-        if self.engine_name == 'jieba':
-            local_config = config.get('jieba', {})
-            self._engine = HanSegJieba(self.global_config, local_config)
-        elif self.engine_name == 'thulac':
-            local_config = config.get('thulac', {})
-            self._engine = HanSegThulac(self.global_config, local_config)
-        elif self.engine_name == 'pkuseg':
-            local_config = config.get('pkuseg', {})
-            self._engine = HanSegPkuseg(self.global_config, local_config)
-        else:
+        engine_name = engine_name.lower()
+
+        if engine_name not in ENGINE_MAP:
             raise HanSegError(f"Engine '{engine_name}' is not supported. Supported engines: jieba, thulac, pkuseg.")
-            
+        
+        self._engine: HanSegBase = ENGINE_MAP[engine_name](
+            config.get('global', {}),
+            config.get(engine_name, {})
+        )
+
     def cut(self, text: str) -> List[str]:
         """
         Standard cut method, return a list of words.

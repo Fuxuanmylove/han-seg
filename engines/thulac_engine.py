@@ -5,7 +5,7 @@ from jieba import analyse
 
 class HanSegThulac(HanSegBase):
     """Implementation based on thulac."""
-    def __init__(self, global_config: dict = None, local_config: dict = None):
+    def __init__(self, global_config: dict = {}, local_config: dict = {}):
         from thulac import thulac
         super().__init__(global_config, local_config)
 
