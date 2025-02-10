@@ -56,9 +56,17 @@ class HanSeg:
         Dynamically delete words, if supported by the engine.
         """
         self._engine.del_word(word)
+        
+    def suggest_freq(self, words) -> None:
+        """Only for jieba"""
+        self._engine.suggest_freq(words)
 
     def keywords(self, text: str):
         """
         Keywordss extract method, return a list of keywordss or (keywords, weight) tuples, depends on the config.
         """
         return self._engine.keywords(text)
+    
+    def sentiment_analysis(self, text: str) -> float:
+        """Only for snownlp"""
+        return self._engine.sentiment_analysis(text)
