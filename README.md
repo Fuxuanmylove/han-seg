@@ -20,14 +20,12 @@ han-seg
 ========
 ```python
 from hanseg.interface import HanSeg
-seg = HanSeg(engine='jieba', config_path='config.yaml') # Choose engine from jieba and thulac
+seg = HanSeg(engine='jieba') # Choose engine from jieba and thulac
 text = "今天天气真好，适合出去散步。"
 word = "花火"
 seg.cut(text)
 seg.pos(text)
-seg.add_word(word) # if engine is jieba
-seg.del_word(word) # if engine is jieba
-seg.keyword_extract(text)
+seg.keywords(text)
 ```
 
 使用配置文件来控制引擎的工作方式
