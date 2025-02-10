@@ -54,6 +54,9 @@ print(seg4.sentiment_analysis(text))
 使用配置文件来控制引擎的工作方式
 * config.yaml
 ```yaml
+log:
+   ...
+
 global:
    ...
 

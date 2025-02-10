@@ -41,7 +41,7 @@ thulac:
 
 pkuseg:
   engine_name: "pkuseg"
-  model_name: "default"
+  model_name: "default" # news web medicine tourism default
   user_dict: "default"
   stop_words: "user_data/stop_words.txt"
   filt: true
