@@ -19,7 +19,7 @@ han-seg
 示例
 ========
 ```python
-from hanseg.interface import HanSeg
+from interface import HanSeg
 seg = HanSeg(engine='jieba') # Choose engine from jieba and thulac
 text = "今天天气真好，适合出去散步。"
 word = "花火"
