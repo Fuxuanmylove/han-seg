@@ -14,14 +14,14 @@ ENGINE_MAP: Dict[str, HanSegBase] = {
     'snownlp': HanSegSnowNLP,
 }
 
-config = load_config("config.yaml")
-
 class HanSeg:
 
-    def __init__(self, engine_name: str = 'jieba'):
+    def __init__(self, engine_name: str = 'jieba', config_path: str = "config.yaml"):
         """
         :param engine: jieba / thulac / pkuseg / snownlp
+        :param config_path: path to config file
         """
+        config = load_config("config.yaml")
         self.global_config = config.get('global', {})
         engine_name = engine_name.lower()
 

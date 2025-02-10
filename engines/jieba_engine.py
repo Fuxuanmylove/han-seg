@@ -2,7 +2,8 @@ from typing import List, Tuple, Union
 import jieba
 from jieba import posseg as pseg
 from jieba import analyse
-from base import HanSegBase, HanSegError
+from base import HanSegBase, HanSegError, logger
+from snownlp import SnowNLP
 
 
 class HanSegJieba(HanSegBase):
@@ -53,3 +54,9 @@ class HanSegJieba(HanSegBase):
             return analyse.extract_tags(text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
         elif self.keywords_method == 'textrank':
             return analyse.textrank(text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+        
+    def sentiment_analysis(self, text: str) -> float:
+        if self.multi_engines:
+            logger.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
+            return SnowNLP(text).sentiments
+        raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method. You can set multi_engines=true in config.")

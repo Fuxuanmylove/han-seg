@@ -114,9 +114,8 @@ class HanSegBase:
     def sentiment_analysis(self, text: str) -> float:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
     
-    def add_word_to_file(self, word: str, tag: str = None) -> None:
-        if not self.user_dict_path:
-            pass
+    def _reload_engine(self) -> None:
+        raise NotImplementedError
     
 class HanSegError(Exception):
     pass
