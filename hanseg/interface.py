@@ -2,23 +2,23 @@
 
 import os
 from typing import List, Tuple, Set
-from base import HanSegBase, HanSegError, check_and_get_stop_words, load_config
+from base import HanSegBase, HanSegError, check_and_get_stop_words, load_config, get_logger
 import jieba
 from jieba import analyse
 from jieba import posseg as pseg
-import logging
 from snownlp import SnowNLP
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+config = load_config("config.yaml")
+
+log_config = config.get('log', {'name': 'hanseg', 'level': 'info', 'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'})
+logger = get_logger(log_config)
 
 class HanSeg:
 
-    def __init__(self, engine: str = 'jieba', config_path: str = "config.yaml"):
+    def __init__(self, engine: str = 'jieba'):
         """
-        :param engine: 'jieba'/'thulac'
-        :param config_path: config file path
+        :param engine: 'jieba'/'thulac'/'pkuseg
         """
-        config = load_config(config_path)
         self.global_config = config.get('global', {})
         self.multi_engines = self.global_config.get('multi_engines', True)
         self.engine_name = engine.lower()
@@ -133,7 +133,7 @@ class HanSegThulac(HanSegBase):
 
     def keywords(self, text: str) -> List[str]:
         if self.multi_engines:
-            logging.info("Multi-engine mode is enabled. Using jieba to extract keywordss.")
+            logger.info("Multi-engine mode is enabled. Using jieba to extract keywordss.")
             processed_text = ' '.join(self.cut(text))
             if self.keywords_method == 'tfidf':
                 return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
@@ -177,7 +177,7 @@ class HanSegPKUSeg(HanSegBase):
 
     def keywords(self, text: str) -> List[str]:
         if self.multi_engines:
-            logging.info("Multi-engine mode is enabled. Using jieba to extract keywordss.")
+            logger.info("Multi-engine mode is enabled. Using jieba to extract keywordss.")
             processed_text = ' '.join(self.cut(text))
             if self.keywords_method == 'tfidf':
                 return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)

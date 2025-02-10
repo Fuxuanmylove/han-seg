@@ -4,6 +4,7 @@ from typing import List, Tuple, Set
 from jieba import analyse
 import os
 import yaml
+import logging
 
 def check_and_get_stop_words(config: dict) -> Set[str]:
     """
@@ -17,12 +18,33 @@ def check_and_get_stop_words(config: dict) -> Set[str]:
     return stop_words_path, stop_words
 
 def load_config(config_path: str) -> dict:
-        """
-        Load config from yaml file.
-        """
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = yaml.safe_load(f)
-        return config
+    """
+    Load config from yaml file.
+    """
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = yaml.safe_load(f)
+    return config
+    
+def get_logger(log_config: dict) -> logging.Logger:
+    """
+    Get logger from config.
+    """
+    level_dict = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'warning': logging.WARNING,
+        'error': logging.ERROR,
+        'critical': logging.CRITICAL
+    }
+    logger = logging.getLogger(log_config.get('name', 'hanseg'))
+    log_level = level_dict.get(log_config.get('level', 'info').lower(), logging.INFO)
+    logger.setLevel(log_level)
+    log_format = log_config.get('format', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(log_format)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    return logger
 
 class HanSegBase:
     def __init__(self, global_config: dict = None, local_config: dict = None):
