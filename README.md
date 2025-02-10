@@ -10,7 +10,7 @@ han-seg
     * snownlp
     * handlp
 
-目前已大致完成jieba与thulac的统一，后续将继续完成剩下工具的统一。
+目前已大致完成jieba，thulac与pkuseg的统一，后续将继续完成剩下工具的统一。
 
 下载
 ========
