@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from base import HanSegBase, HanSegError, logger
 from jieba import analyse
 
@@ -28,7 +28,7 @@ class HanSegThulac(HanSegBase):
             return [(word, pos) for word, pos in self._thulac.cut(text) if word not in self.stop_words]            
         return [(word, pos) for word, pos in self._thulac.cut(text)]
 
-    def keywords(self, text: str) -> List[str]:
+    def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
         if self.multi_engines:
             logger.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
             processed_text = ' '.join(self.cut(text))

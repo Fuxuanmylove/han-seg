@@ -34,27 +34,19 @@ class HanSeg:
         )
 
     def cut(self, text: str) -> List[str]:
-        """
-        Standard cut method, return a list of words.
-        """
+        """Standard cut method, return a list of words."""
         return self._engine.cut(text)
     
     def pos(self, text: str) -> List[Tuple[str, str]]:
-        """
-        Returns the tokens and their corresponding POS tags.
-        """
+        """Returns the tokens and their corresponding POS tags."""
         return self._engine.pos(text)
         
     def add_word(self, word: str, freq: int = 1, tag: str = None):
-        """
-        Dynamically add words, if supported by the engine.
-        """
+        """Dynamically add words, if supported by the engine."""
         self._engine.add_word(word, freq, tag)
 
     def del_word(self, word: str):
-        """
-        Dynamically delete words, if supported by the engine.
-        """
+        """Dynamically delete words, if supported by the engine."""
         self._engine.del_word(word)
         
     def suggest_freq(self, words) -> None:

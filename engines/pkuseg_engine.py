@@ -1,6 +1,7 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from base import HanSegBase, HanSegError, logger
 from jieba import analyse
+
 
 class HanSegPkuseg(HanSegBase):
     """Implementation based on pkuseg."""
@@ -29,7 +30,7 @@ class HanSegPkuseg(HanSegBase):
             return [(word[0], word[1]) for word in self._pkuseg.cut(text) if word[0] not in self.stop_words]
         return self._pkuseg.cut(text)
 
-    def keywords(self, text: str) -> List[str]:
+    def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
         if self.multi_engines:
             logger.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
             processed_text = ' '.join(self.cut(text))

@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import jieba
 from jieba import posseg as pseg
 from jieba import analyse
@@ -48,7 +48,7 @@ class HanSegJieba(HanSegBase):
     def suggest_freq(self, words) -> None:
         jieba.suggest_freq(words, tune=self.tune)
         
-    def keywords(self, text: str) -> List[str]:
+    def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
         if self.keywords_method == 'tfidf':
             return analyse.extract_tags(text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
         elif self.keywords_method == 'textrank':
