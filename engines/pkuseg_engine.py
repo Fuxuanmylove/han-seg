@@ -1,5 +1,6 @@
+import logging
 from typing import List, Tuple, Union
-from base import HanSegBase, HanSegError, logger
+from base import HanSegBase, HanSegError
 from jieba import analyse
 from pkuseg import pkuseg
 from snownlp import SnowNLP
@@ -64,7 +65,7 @@ class HanSegPkuseg(HanSegBase):
 
     def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
         if self.multi_engines:
-            logger.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
+            logging.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
             processed_text = ' '.join(self.cut(text))
             if self.keywords_method == 'tfidf':
                 return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
@@ -74,7 +75,7 @@ class HanSegPkuseg(HanSegBase):
         
     def sentiment_analysis(self, text: str) -> float:
         if self.multi_engines:
-            logger.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
+            logging.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
             return SnowNLP(text).sentiments
         raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method. You can set multi_engines=true in config.")
     

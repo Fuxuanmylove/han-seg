@@ -1,8 +1,9 @@
+import logging
 from typing import List, Tuple, Union
 import jieba
 from jieba import posseg as pseg
 from jieba import analyse
-from base import HanSegBase, HanSegError, logger
+from base import HanSegBase, HanSegError
 from snownlp import SnowNLP
 
 
@@ -57,6 +58,9 @@ class HanSegJieba(HanSegBase):
         
     def sentiment_analysis(self, text: str) -> float:
         if self.multi_engines:
-            logger.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
+            logging.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
             return SnowNLP(text).sentiments
         raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method. You can set multi_engines=true in config.")
+    
+    def _process_chunk(self, lines: List[str]) -> List[str]:
+        return [' '.join(self.cut(line)) + '\n' for line in lines]

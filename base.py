@@ -1,10 +1,19 @@
 # base.py
 
-from typing import List, Tuple, Set, Union
+from typing import List, TextIO, Tuple, Set, Union
 from jieba import analyse
 import os
 import yaml
 import logging
+
+global_processor = None
+
+def init_worker(processor):
+    global global_processor
+    global_processor = processor
+    
+def worker_process(lines):
+    return [' '.join(global_processor.cut(line)) + '\n' for line in lines]
 
 def check_and_get_stop_words(config: dict) -> Set[str]:
     """
@@ -29,7 +38,7 @@ def get_logger(log_config: dict) -> logging.Logger:
     """
     Get logger from config.
     """
-    level_dict = {
+    LEVEL_DICT = {
         'debug': logging.DEBUG,
         'info': logging.INFO,
         'warning': logging.WARNING,
@@ -37,7 +46,7 @@ def get_logger(log_config: dict) -> logging.Logger:
         'critical': logging.CRITICAL
     }
     logger = logging.getLogger(log_config.get('name', 'hanseg'))
-    log_level = level_dict.get(log_config.get('level', 'info').lower(), logging.INFO)
+    log_level = LEVEL_DICT.get(log_config.get('level', 'info').lower(), logging.INFO)
     logger.setLevel(log_level)
     log_format = log_config.get('format', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     formatter = logging.Formatter(log_format)
@@ -46,17 +55,12 @@ def get_logger(log_config: dict) -> logging.Logger:
     logger.addHandler(console_handler)
     return logger
 
-config = load_config("config.yaml")
-log_config = config.get('log', {'name': 'hanseg', 'level': 'info', 'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'})
-logger = get_logger(log_config)
-
 
 class HanSegBase:
     def __init__(self, global_config: dict = {}, local_config: dict = {}):
 
         self.global_config = global_config or {}
         self.local_config = local_config or {}
-
         self.engine_name = local_config.get('engine_name', None)
         if not self.engine_name:
             raise HanSegError("Engine name is not specified in the config.")
@@ -114,6 +118,17 @@ class HanSegBase:
     def sentiment_analysis(self, text: str) -> float:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
     
+    def cut_file(self, input_path: str, output_path: str) -> None:
+
+        with open(input_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            
+        with open(output_path, 'w', encoding='utf-8') as f:
+            for line in lines:
+                line = line.strip()
+                if line:
+                    f.write(' '.join(self.cut(line)) + '\n')
+
     def _reload_engine(self) -> None:
         raise NotImplementedError
     

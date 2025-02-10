@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from base import HanSegBase, HanSegError, logger
+from base import HanSegBase, HanSegError
 from snownlp import SnowNLP
 
 class HanSegSnowNLP(HanSegBase):
@@ -11,6 +11,11 @@ class HanSegSnowNLP(HanSegBase):
         if self.filt:
             return [word for word in SnowNLP(text).words if word not in self.stop_words]
         return SnowNLP(text).words
+    
+    def pos(self, text: str) -> List[Tuple[str, str]]:
+        if self.filt:
+            return [(word, tag) for word, tag in SnowNLP(text).tags if word not in self.stop_words]
+        return [(word, tag) for word, tag in SnowNLP(text).tags]
     
     def keywords(self, text: str) -> List[str]:
         if self.filt:

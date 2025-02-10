@@ -1,6 +1,6 @@
 # interface.py
 
-from base import HanSegBase, HanSegError, load_config
+from base import HanSegBase, HanSegError, load_config, get_logger
 from typing import List, Tuple, Dict
 from engines.jieba_engine import HanSegJieba
 from engines.thulac_engine import HanSegThulac
@@ -21,7 +21,7 @@ class HanSeg:
         :param engine: jieba / thulac / pkuseg / snownlp
         :param config_path: path to config file
         """
-        config = load_config("config.yaml")
+        config = load_config(config_path)
         self.global_config = config.get('global', {})
         engine_name = engine_name.lower()
 
@@ -62,3 +62,12 @@ class HanSeg:
     def sentiment_analysis(self, text: str) -> float:
         """Only for snownlp"""
         return self._engine.sentiment_analysis(text)
+    
+    def cut_file(self, input_path: str, output_path: str) -> None:
+        """
+        Cut a file, line by line, and save the result to output_path.
+        :param input_path: path to input file
+        :param output_path: path to output file
+        :return: None
+        """
+        self._engine.cut_file(input_path, output_path)
