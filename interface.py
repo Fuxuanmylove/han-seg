@@ -60,7 +60,7 @@ class HanSeg:
         return self._engine.keywords(text)
 
     def sentiment_analysis(self, text: str) -> float:
-        """Only for snownlp"""
+        """Other engines will use snownlp if multi_engines=true."""
         return self._engine.sentiment_analysis(text)
     
     def cut_file(self, input_path: str, output_path: str) -> None:
