@@ -85,9 +85,13 @@ def test():
     seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。"
+    tradition = "「繁體字」「繁體中文」的叫法在臺灣亦很常見。"
     
     print("拼音")
     print(HanSeg.pinyin(text))
+    
+    print("繁体转简体")
+    print(HanSeg.t2s(tradition))
 
     seg1.suggest_freq(('今天', '天气'))
 

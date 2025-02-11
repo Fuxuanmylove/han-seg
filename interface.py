@@ -32,7 +32,7 @@ class HanSeg:
 
         if self.engine_name not in ENGINE_MAP:
             raise HanSegError(f"Engine '{self.engine_name}' is not supported. Supported engines: jieba, thulac, pkuseg.")
-        
+
         self._engine: HanSegBase = ENGINE_MAP[self.engine_name](
             self.engine_name,
             self.multi_engines,
@@ -49,7 +49,7 @@ class HanSeg:
     def pos(self, text: str) -> List[Tuple[str, str]]:
         """Returns the tokens and their corresponding POS tags."""
         return self._engine.pos(text)
-        
+
     def add_word(self, word: str, freq: int = 1, flag: str = None):
         """Dynamically add words or add words to user_dict, if supported by the engine."""
         self._engine.add_word(word, freq, flag)
@@ -57,7 +57,7 @@ class HanSeg:
     def del_word(self, word: str):
         """Dynamically delete words or delete words from user_dict, if supported by the engine."""
         self._engine.del_word(word)
-        
+
     def suggest_freq(self, words) -> None:
         """Only for jieba"""
         self._engine.suggest_freq(words)
@@ -69,7 +69,7 @@ class HanSeg:
     def sentiment_analysis(self, text: str) -> float:
         """Other engines will use snownlp if multi_engines=true."""
         return self._engine.sentiment_analysis(text)
-    
+
     def cut_file(self, input_path: str, output_path: str, batch_size: int = 100) -> None:
         """
         Cut a file, line by line, and save the result to output_path.
@@ -79,7 +79,7 @@ class HanSeg:
         :return: None
         """
         self._engine.cut_file(input_path, output_path, batch_size)
-        
+
     def cut_file_fast(self, input_path: str, output_path: str, workers: int = 10) -> None:
         """
         Fast cut, using pkuseg.
@@ -103,12 +103,17 @@ class HanSeg:
             postag=postag,
             verbose=verbose,
         )
-        
+
     def words_count(self, input_file: str, output_file: str) -> None:
         """Count the words in a file, and save the result to output_file."""
         self._engine.words_count(input_file, output_file)
-    
+
     @staticmethod
     def pinyin(text: str) -> List[str]:
         """Return the pinyin of the text."""
         return SnowNLP(text).pinyin
+
+    @staticmethod
+    def t2s(text: str) -> str:
+        """Convert traditional Chinese to simplified Chinese."""
+        return SnowNLP(text).han
