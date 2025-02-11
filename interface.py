@@ -41,10 +41,10 @@ class HanSeg:
             self.config.get(self.engine_name, {})
         )
 
-    def cut(self, text: str) -> List[str]:
+    def cut(self, text: str, with_position: bool = False) -> List[str]:
         """Standard cut method, return a list of words."""
-        return self._engine.cut(text)
-    
+        return self._engine.cut(text, with_position)
+
     def pos(self, text: str) -> List[Tuple[str, str]]:
         """Returns the tokens and their corresponding POS tags."""
         return self._engine.pos(text)

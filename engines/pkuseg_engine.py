@@ -15,15 +15,22 @@ class HanSegPkuseg(HanSegBase):
         self.postag = local_config.get('postag', True)
         self._pkuseg = pkuseg(model_name=self.model_name, user_dict=self.user_dict_path, postag=self.postag)
         
-    def cut(self, text: str) -> List[str]:
+    def cut(self, text: str, with_position: bool = False) -> List[str]:
         if self.postag:
-            if self.filt:
-                return [word[0] for word in self._pkuseg.cut(text) if word[0] not in self.stop_words]
-            return [word[0] for word in self._pkuseg.cut(text)] 
-        
+            words = [word[0] for word in self._pkuseg.cut(text)]
+        else:
+            words = self._pkuseg.cut(text)
+            
+        if with_position:
+            words = HanSegBase._add_position(words)
+
         if self.filt:
-            return [word for word in self._pkuseg.cut(text) if word not in self.stop_words]
-        return self._pkuseg.cut(text)
+            if with_position:
+                words = [(word, start, end) for word, start, end in words if word not in self.stop_words]
+            else:
+                words = [word for word in words if word not in self.stop_words]
+
+        return words
     
     def pos(self, text: str) -> List[Tuple[str, str]]:
         if not self.postag:

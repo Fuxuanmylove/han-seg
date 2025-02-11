@@ -22,6 +22,7 @@ han-seg
     * 按用户配置对文件进行分词（不支持多进程） ✔️
     * 快速切分文件（各引擎接口一致使用pkuseg快速切分文件接口） ✔️
     * 按停止词过滤输出 ✔️
+    * 带位置信息的分词 ✔️
     * 即时修改用户词典 ✔️ 需要注意，使用thulac和pkuseg时此操作可能会显著降低程序运行效率
     * 滞后修改用户词典 ❌
     * 修改停止词字典 ❌
@@ -30,7 +31,6 @@ han-seg
     * 文本总结 ❌
     * 拼音转换 ❌
     * 繁体转简体 ❌
-    * 带位置信息的分词 ❌
     * 文本相似度 ❌
     * 词向量 ❌
     * 词频统计 ❌
@@ -46,8 +46,9 @@ han-seg
 | 关键词提取   | ✔️    | ✔️*    | ✔️*     | ✔️     |
 | 情感分析     | ✔️*   | ✔️*    | ✔️*    | ✔️      |
 | 切分文件     | ✔️    | ✔️     | ✔️     | ✔️      |
+| 切分文件（带位置）     | ✔️    | ✔️     | ✔️     | ✔️      |
 | 按停止词过滤输出     | ✔️    | ✔️     | ✔️     | ✔️      |
-| 修改字典     | ✔️    | ✔️     | ✔️     | ❌      |
+| 修改字典     | ✔️    | ✔️     | ✔️     | ✔️      |
 
 *代表需启用多引擎模式
 
@@ -59,7 +60,9 @@ jieba引擎独有的suggest_freq功能，暂时无法在其他引擎基础上实
 
 快速切分文件功能虽然各个引擎都能调用，但是内部统一使用pkuseg的快速切分文件接口以及pkuseg的相关配置，因此使用前需要注意对pkuseg相关配置进行调整。
 
-snownlp无法使用用户自定义的词典，因此无法修改词典。
+注意，切分文件时请确保文件内的同一句话内没有换行符，也即是说，一行内可以有多句完整的话，但请不要把一句话拆成多行。
+
+snownlp虽然可以修改词典，但是不会影响其行为，因为其无法使用用户自定义的词典。
 
 下载
 ========
@@ -80,7 +83,7 @@ def test():
     seg2 = HanSeg('thulac', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    text = "今天天气真好，适合出去散步。如果花火小姐是我的老婆，那么我将十分富有，这样我就再也不用打工了。想到这就觉得很开心！"
+    text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。"
 
     seg1.suggest_freq(('今天', '天气'))
 
@@ -89,6 +92,11 @@ def test():
     print(seg2.cut(text))
     print(seg3.cut(text))
     print(seg4.cut(text))
+    
+    print(seg1.cut(text, with_position=True))
+    print(seg2.cut(text, with_position=True))
+    print(seg3.cut(text, with_position=True))
+    print(seg4.cut(text, with_position=True))
 
     print("词性标注")
     print(seg1.pos(text))
@@ -109,16 +117,16 @@ def test():
     print(seg4.sentiment_analysis(text))
 
     print("增加单词")
-    seg1.add_word("紫色心情") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
-    seg2.add_word("紫色心情")
-    seg3.add_word("紫色心情")
-    seg4.add_word("紫色心情")
+    seg1.add_word("哈基米") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
+    seg2.add_word("哈基米")
+    seg3.add_word("哈基米")
+    seg4.add_word("哈基米")
 
     print("删除单词")
-    seg1.del_word("紫色心情") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
-    seg2.del_word("紫色心情")
-    seg3.del_word("紫色心情")
-    seg4.del_word("紫色心情")
+    seg1.del_word("哈基米") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
+    seg2.del_word("哈基米")
+    seg3.del_word("哈基米")
+    seg4.del_word("哈基米")
     
     # 虽然可以让SnowNLP操作用户词典，但是这种行为不会影响SnowNLP的行为与结果。
 
@@ -144,25 +152,18 @@ if __name__ == '__main__':
 使用配置文件来控制引擎的工作方式
 * config.yaml
 ```yaml
-# You can modify the following configuration as needed, but don't delete any lines.
-# For the file path, if you don't need to set it, just make it an empty string.
-
 jieba:
   HMM: false
   tune: true
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
   dictionary: "" # empty string if not needed
-  user_dict: "user_data/user_dict.txt" # empty string if not needed
-  stop_words: "user_data/stop_words.txt" # empty string if not needed
   idf_path: ""
   keywords_method: "textrank" # textrank or tfidf
   cut_mode: "default" # default / full / search
 
 thulac:
   model_path: ""
-  user_dict: "user_data/user_dict.txt"
-  stop_words: "user_data/stop_words.txt"
   t2s: false
   seg_only: false
   max_length: 50000
@@ -173,8 +174,6 @@ thulac:
 
 pkuseg:
   model_name: "web" # news web medicine tourism default
-  user_dict: "user_data/user_dict.txt" # set it to "default" if not needed, do not leave it empty
-  stop_words: "user_data/stop_words.txt"
   postag: true
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
@@ -183,7 +182,7 @@ pkuseg:
   verbose: false
 
 snownlp:
-  stop_words: "user_data/stop_words.txt"
+
 ```
 
 本项目旨在尽量统一各个库的接口并统一输出形式便于用户使用。如有建议请务必提出！

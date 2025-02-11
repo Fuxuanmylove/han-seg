@@ -47,7 +47,7 @@ class HanSegBase:
             if self.keywords_method == 'tfidf' and self.idf_path and (self.multi_engines or self.engine_name == 'jieba'):
                 analyse.set_idf_path(self.idf_path)
 
-    def cut(self, text: str) -> List[str]:
+    def cut(self, text: str, with_position: bool) -> List[str]:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
     def pos(self, text: str) -> List[Tuple[str, str]]:
@@ -139,6 +139,17 @@ class HanSegBase:
         with open(config_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
         return config
+    
+    @staticmethod
+    def _add_position(words: List[str]) -> List[Tuple[str, int, int]]:
+        """Add position information to each word. Please use it before filtering stop words."""
+        result = []
+        start = 0
+        for word in words:
+            end = start + len(word)
+            result.append((word, start, end))
+            start = end
+        return result
 
 class HanSegError(Exception):
     pass

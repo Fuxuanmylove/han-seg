@@ -24,15 +24,34 @@ class HanSegJieba(HanSegBase):
         if self.cut_mode not in ('default', 'full', 'search'):
             raise HanSegError(f"Invalid cut mode: {self.cut_mode}.\nYou must set cut_mode to 'default', 'full' or 'search' in your config.")
 
-    def cut(self, text: str) -> List[str]:
+    def cut(self, text: str, with_position: bool = False) -> Union[List[str], List[Tuple[str, int, int]]]:
         if self.cut_mode == 'default':
-            words = jieba.cut(text, HMM=self.HMM)
+            func = jieba.tokenize if with_position else jieba.cut
+            words = func(text, HMM=self.HMM)
         elif self.cut_mode == 'full':
             words = jieba.cut(text, cut_all=True, HMM=self.HMM)
-        elif self.cut_mode == 'search':
-            words = jieba.cut_for_search(text, HMM=self.HMM)
+            if with_position:
+                start = 0
+                result = []
+                prev = None
+                for word in words:
+                    if word == prev:
+                        start += 1
+                    left = text.find(word, start)
+                    right = left + len(word)
+                    result.append((word, left, right))
+                    start = left
+                    prev = word
+                words = result
+        else:
+            if with_position:
+                words = jieba.tokenize(text, mode='search', HMM=self.HMM)
+            else:
+                words = jieba.cut_for_search(text, HMM=self.HMM)
 
         if self.filt:
+            if with_position:
+                return [(word, left, right) for word, left, right in words if word not in self.stop_words]
             return [word for word in words if word not in self.stop_words]
         return list(words)
         

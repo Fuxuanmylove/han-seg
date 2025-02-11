@@ -9,7 +9,7 @@ jieba:
   dictionary: "" # empty string if not needed
   idf_path: ""
   keywords_method: "textrank" # textrank or tfidf
-  cut_mode: "default" # default / full / search
+  cut_mode: "full" # default / full / search
 
 thulac:
   model_path: ""

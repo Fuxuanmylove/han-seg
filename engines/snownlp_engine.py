@@ -7,10 +7,19 @@ class HanSegSnowNLP(HanSegBase):
     def __init__(self, engine_name: str, multi_engines: bool, user_dict: str, filt: bool, stop_words_path: str, local_config: dict):
         super().__init__(engine_name, multi_engines, user_dict, filt, stop_words_path, local_config)
     
-    def cut(self, text: str) -> List[str]:
+    def cut(self, text: str, with_position: bool = False) -> List[str]:
+        words = SnowNLP(text).words
+        
+        if with_position:
+            words = HanSegBase._add_position(words)
+
         if self.filt:
-            return [word for word in SnowNLP(text).words if word not in self.stop_words]
-        return SnowNLP(text).words
+            if with_position:
+                words = [(word, start, end) for word, start, end in words if word not in self.stop_words]
+            else:
+                words = [word for word in words if word not in self.stop_words]
+
+        return words
     
     def pos(self, text: str) -> List[Tuple[str, str]]:
         if self.filt:

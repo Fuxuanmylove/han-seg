@@ -19,10 +19,19 @@ class HanSegThulac(HanSegBase):
         self.t2s = self.local_config.get('t2s', False)
         self._thulac = thulac(model_path=self.model_path, seg_only=self.seg_only, T2S=self.t2s, user_dict=self.user_dict_path)
             
-    def cut(self, text: str) -> List[str]:
+    def cut(self, text: str, with_position: bool = False) -> List[str]:
+        words = [word[0] for word in self._thulac.cut(text)]
+
+        if with_position:
+            words = HanSegBase._add_position(words)
+
         if self.filt:
-            return [word[0] for word in self._thulac.cut(text) if word[0] not in self.stop_words]
-        return [word[0] for word in self._thulac.cut(text)]
+            if with_position:            
+                words = [(word, start, end) for word, start, end in words if word not in self.stop_words]
+            else:
+                words = [word for word in words if word not in self.stop_words]
+
+        return words
     
     def pos(self, text: str) -> List[Tuple[str, str]]:
         if self.seg_only:

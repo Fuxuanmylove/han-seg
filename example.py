@@ -12,7 +12,7 @@ def test():
     seg2 = HanSeg('thulac', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    text = "今天天气真好，适合出去散步。如果花火小姐是我的老婆，那么我将十分富有，这样我就再也不用打工了。想到这就觉得很开心！"
+    text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。"
 
     seg1.suggest_freq(('今天', '天气'))
 
@@ -21,6 +21,11 @@ def test():
     print(seg2.cut(text))
     print(seg3.cut(text))
     print(seg4.cut(text))
+    
+    print(seg1.cut(text, with_position=True))
+    print(seg2.cut(text, with_position=True))
+    print(seg3.cut(text, with_position=True))
+    print(seg4.cut(text, with_position=True))
 
     print("词性标注")
     print(seg1.pos(text))
@@ -41,16 +46,16 @@ def test():
     print(seg4.sentiment_analysis(text))
 
     print("增加单词")
-    seg1.add_word("紫色心情") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
-    seg2.add_word("紫色心情")
-    seg3.add_word("紫色心情")
-    seg4.add_word("紫色心情")
+    seg1.add_word("哈基米") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
+    seg2.add_word("哈基米")
+    seg3.add_word("哈基米")
+    seg4.add_word("哈基米")
 
     print("删除单词")
-    seg1.del_word("紫色心情") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
-    seg2.del_word("紫色心情")
-    seg3.del_word("紫色心情")
-    seg4.del_word("紫色心情")
+    seg1.del_word("哈基米") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
+    seg2.del_word("哈基米")
+    seg3.del_word("哈基米")
+    seg4.del_word("哈基米")
     
     # 虽然可以让SnowNLP操作用户词典，但是这种行为不会影响SnowNLP的行为与结果。
 
