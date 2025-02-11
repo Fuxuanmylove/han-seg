@@ -1,9 +1,6 @@
 # You can modify the following configuration as needed, but don't delete any lines.
 # For the file path, if you don't need to set it, just make it an empty string.
 
-global:
-  cut_file_batch_size: 100
-
 jieba:
   HMM: false
   tune: true

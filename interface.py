@@ -34,7 +34,6 @@ class HanSeg:
             self.engine_name,
             self.filt,
             self.multi_engines,
-            self.config.get('global', {}),
             self.config.get(self.engine_name, {})
         )
 
@@ -66,7 +65,7 @@ class HanSeg:
         """Other engines will use snownlp if multi_engines=true."""
         return self._engine.sentiment_analysis(text)
     
-    def cut_file(self, input_path: str, output_path: str) -> None:
+    def cut_file(self, input_path: str, output_path: str, batch_size: int = 100) -> None:
         """
         Cut a file, line by line, and save the result to output_path.
 
@@ -74,7 +73,7 @@ class HanSeg:
         :param output_path: path to output file
         :return: None
         """
-        self._engine.cut_file(input_path, output_path)
+        self._engine.cut_file(input_path, output_path, batch_size)
         
     def cut_file_fast(self, input_path: str, output_path: str, workers: int = 10) -> None:
         """

@@ -9,8 +9,8 @@ from snownlp import SnowNLP
 class HanSegThulac(HanSegBase):
     """Implementation based on thulac."""
 
-    def __init__(self, engine_name: str, filt: bool, multi_engines: bool, global_config: dict, local_config: dict):
-        super().__init__(engine_name, filt, multi_engines, global_config, local_config)
+    def __init__(self, engine_name: str, filt: bool, multi_engines: bool, local_config: dict):
+        super().__init__(engine_name, filt, multi_engines, local_config)
 
         self.model_path = self.local_config.get('model_path', None)
         if not self.model_path:

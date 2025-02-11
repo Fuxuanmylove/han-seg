@@ -17,9 +17,8 @@ def load_config(config_path: str) -> dict:
 
 
 class HanSegBase:
-    def __init__(self, engine_name: str, filt: bool, multi_engines: bool, global_config: dict, local_config: dict):
+    def __init__(self, engine_name: str, filt: bool, multi_engines: bool, local_config: dict):
 
-        self.global_config = global_config or {}
         self.local_config = local_config or {}
         self.engine_name = engine_name
         if not self.engine_name:
@@ -57,8 +56,6 @@ class HanSegBase:
             self.idf_path = self.local_config.get('idf_path', None)
             if self.keywords_method == 'tfidf' and self.idf_path and (self.multi_engines or self.engine_name == 'jieba'):
                 analyse.set_idf_path(self.idf_path)
-     
-        self.batch_size = self.global_config.get('cut_file_batch_size', 100)
 
     def cut(self, text: str) -> List[str]:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
@@ -114,7 +111,7 @@ class HanSegBase:
             return SnowNLP(processed_text).sentiments
         raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method.")
     
-    def cut_file(self, input_path: str, output_path: str) -> None:
+    def cut_file(self, input_path: str, output_path: str, batch_size) -> None:
         with open(input_path, 'r', encoding='utf-8') as f_in, \
             open(output_path, 'w', encoding='utf-8') as f_out:
             batch = []
@@ -122,7 +119,7 @@ class HanSegBase:
                 line = line.strip()
                 if line:
                     batch.append(line)
-                    if len(batch) >= self.batch_size:
+                    if len(batch) >= batch_size:
                         processed = [' '.join(self.cut(l)) + '\n' for l in batch]
                         f_out.writelines(processed)
                         batch = []
