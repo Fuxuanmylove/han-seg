@@ -6,9 +6,7 @@ global:
   cut_file_batch_size: 100
 
 jieba:
-  engine_name: "jieba"
   HMM: false
-  filt: true
   tune: true
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
@@ -20,13 +18,11 @@ jieba:
   cut_mode: "default" # default / full / search
 
 thulac:
-  engine_name: "thulac"
   model_path: ""
   user_dict: "user_data/user_dict.txt"
   stop_words: "user_data/stop_words.txt"
   t2s: false
   seg_only: false
-  filt: true # change to filt_by_stop -- add filt_by_pos later
   max_length: 50000
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
@@ -34,11 +30,9 @@ thulac:
   allowPOS: "ns n vn v" # seperated by space
 
 pkuseg:
-  engine_name: "pkuseg"
   model_name: "web" # news web medicine tourism default
-  user_dict: "user_data/user_dict.txt"
+  user_dict: "user_data/user_dict.txt" # set it to "default" if not needed, do not leave it empty
   stop_words: "user_data/stop_words.txt"
-  filt: true
   postag: true
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
@@ -47,6 +41,4 @@ pkuseg:
   verbose: false
 
 snownlp:
-  engine_name: "snownlp"
   stop_words: "user_data/stop_words.txt"
-  filt: true

@@ -6,10 +6,10 @@ CONFIG_PATH = "config.yaml"
 
 def test():
     # 初始化thulac引擎
-    seg1 = HanSeg('jieba', CONFIG_PATH)
-    seg2 = HanSeg('thulac', CONFIG_PATH)
-    seg3 = HanSeg('pkuseg', CONFIG_PATH)
-    seg4 = HanSeg('snownlp', CONFIG_PATH)
+    seg1 = HanSeg('jieba', filt=True, config_path=CONFIG_PATH)
+    seg2 = HanSeg('thulac', filt=True, config_path=CONFIG_PATH)
+    seg3 = HanSeg('pkuseg', filt=True, config_path=CONFIG_PATH)
+    seg4 = HanSeg('snownlp', filt=True, config_path=CONFIG_PATH)
     text = "今天天气真好，适合出去散步。如果花火小姐是我的老婆，那么我将十分富有，这样我就再也不用打工了。想到这就觉得很开心！"
 
     seg1.suggest_freq(('今天', '天气'))

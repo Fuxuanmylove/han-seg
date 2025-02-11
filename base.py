@@ -17,24 +17,23 @@ def load_config(config_path: str) -> dict:
 
 
 class HanSegBase:
-    def __init__(self, global_config: dict = {}, local_config: dict = {}):
+    def __init__(self, engine_name: str, filt: bool, global_config: dict, local_config: dict):
 
         self.global_config = global_config or {}
         self.local_config = local_config or {}
-        self.engine_name = local_config.get('engine_name', None)
+        self.engine_name = engine_name
         if not self.engine_name:
             raise HanSegError("Engine name is not specified in the config.")
 
         self.multi_engines = global_config.get('multi_engines', True)
-        self.filt = self.local_config.get('filt', False)
+        self.filt = filt
 
         if self.engine_name != 'snownlp':
             self.user_dict_path = self.local_config.get('user_dict', '')
-            if self.engine_name == 'pkuseg':
-                if not self.user_dict_path:
-                    self.user_dict_path = 'default'
-            elif not os.path.exists(self.user_dict_path):
-                raise HanSegError(f"User dictionary file {self.user_dict_path} not found.\nIf you don't need to set a user dict, leave user_dict an empty string in your config.")
+            if not (self.engine_name == 'pkuseg' and self.user_dict_path == 'default'):
+                if not os.path.exists(self.user_dict_path):
+                    raise HanSegError(f"User dictionary file {self.user_dict_path} not found.\nIf you don't need to set a user dict, leave user_dict an empty string in your config.")
+                self._clean_file(self.user_dict_path)
 
         self.stop_words = set()
         if self.filt:
@@ -147,7 +146,7 @@ class HanSegBase:
         """Check if the stop words file exists, and return the set of stop words."""
         with open(stop_words_path, 'r', encoding='utf-8') as f:
             stop_words = {line.strip() for line in f if line.strip()}
-        return stop_words_path, stop_words
-    
+        return stop_words
+
 class HanSegError(Exception):
     pass
