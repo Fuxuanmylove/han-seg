@@ -2,7 +2,6 @@
 # For the file path, if you don't need to set it, just make it an empty string.
 
 global:
-  multi_engines: true # use other engines while using some method that is not supported by current engine
   cut_file_batch_size: 100
 
 jieba:

@@ -17,7 +17,7 @@ def load_config(config_path: str) -> dict:
 
 
 class HanSegBase:
-    def __init__(self, engine_name: str, filt: bool, global_config: dict, local_config: dict):
+    def __init__(self, engine_name: str, filt: bool, multi_engines: bool, global_config: dict, local_config: dict):
 
         self.global_config = global_config or {}
         self.local_config = local_config or {}
@@ -25,7 +25,7 @@ class HanSegBase:
         if not self.engine_name:
             raise HanSegError("Engine name is not specified in the config.")
 
-        self.multi_engines = global_config.get('multi_engines', True)
+        self.multi_engines = multi_engines
         self.filt = filt
 
         if self.engine_name != 'snownlp':
@@ -105,14 +105,14 @@ class HanSegBase:
                 return analyse.extract_tags(processed_text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
             elif self.keywords_method == 'textrank':
                 return analyse.textrank(processed_text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
-        raise HanSegError("Multi-engine mode is disabled and thulac does not support keywords extract. You can set multi_engines=true in config.")
+        raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support keywords extract.")
 
     def sentiment_analysis(self, text: str) -> float:
         if self.multi_engines:
             logging.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
             processed_text = ' '.join(self.cut(text))
             return SnowNLP(processed_text).sentiments
-        raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method. You can set multi_engines=true in config.")
+        raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method.")
     
     def cut_file(self, input_path: str, output_path: str) -> None:
         with open(input_path, 'r', encoding='utf-8') as f_in, \
