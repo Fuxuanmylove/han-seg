@@ -4,8 +4,8 @@ from snownlp import SnowNLP
 
 class HanSegSnowNLP(HanSegBase):
     """Implementation based on SnowNLP"""
-    def __init__(self, engine_name: str, filt: bool, multi_engines: bool, local_config: dict):
-        super().__init__(engine_name, filt, multi_engines, local_config)
+    def __init__(self, engine_name: str, multi_engines: bool, filt: bool, stop_words_path: str, local_config: dict):
+        super().__init__(engine_name, multi_engines, filt, stop_words_path, local_config)
     
     def cut(self, text: str) -> List[str]:
         if self.filt:

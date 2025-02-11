@@ -8,8 +8,8 @@ from snownlp import SnowNLP
 
 class HanSegPkuseg(HanSegBase):
     """Implementation based on pkuseg."""
-    def __init__(self, engine_name: str, filt: bool, multi_engines: bool, local_config: dict):
-        super().__init__(engine_name, filt, multi_engines, local_config)
+    def __init__(self, engine_name: str, multi_engines: bool, filt: bool, stop_words_path: str, local_config: dict):
+        super().__init__(engine_name, multi_engines, filt, stop_words_path, local_config)
         
         self.model_name = local_config.get('model_name', 'default')
         self.postag = local_config.get('postag', True)

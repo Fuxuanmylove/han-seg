@@ -9,8 +9,8 @@ from snownlp import SnowNLP
 
 class HanSegJieba(HanSegBase):
     """Implementation based on jieba."""
-    def __init__(self, engine_name: str, filt: bool, multi_engines: bool, local_config: dict):
-        super().__init__(engine_name, filt, multi_engines, local_config)
+    def __init__(self, engine_name: str, multi_engines: bool, filt: bool, stop_words_path: str, local_config: dict):
+        super().__init__(engine_name, multi_engines, filt, stop_words_path, local_config)
         self.HMM = local_config.get('HMM', True)
         self.tune = local_config.get('tune', True)
         self.dictionary_path = local_config.get('dictionary', None)

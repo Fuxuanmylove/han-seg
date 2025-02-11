@@ -17,7 +17,7 @@ def load_config(config_path: str) -> dict:
 
 
 class HanSegBase:
-    def __init__(self, engine_name: str, filt: bool, multi_engines: bool, local_config: dict):
+    def __init__(self, engine_name: str, multi_engines: bool, filt: bool, stop_words_path: str, local_config: dict):
 
         self.local_config = local_config or {}
         self.engine_name = engine_name
@@ -36,9 +36,9 @@ class HanSegBase:
 
         self.stop_words = set()
         if self.filt:
-            self.stop_words_path = self.local_config.get('stop_words', '')
-            if not self.stop_words_path:
-                raise HanSegError("Stop words file path is not specified in the config file when filt=true.")
+            self.stop_words_path = stop_words_path
+            if not os.path.exists(self.stop_words_path):
+                raise HanSegError("Cannot find stop words file when you turn on the filter.")
             self._clean_file(self.stop_words_path)
             self.stop_words = HanSegBase._check_and_get_stop_words(self.stop_words_path)
             if self.multi_engines or self.engine_name == 'jieba':

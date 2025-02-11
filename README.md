@@ -23,6 +23,7 @@ han-seg
     * 快速切分文件（各引擎接口一致使用pkuseg快速切分文件接口） ✔️
     * 按停止词过滤输出 ✔️
     * 即时修改用户词典 ✔️
+    * 滞后修改用户词典 ❌
     * 修改停止词字典 ❌
     * 按词性过滤输出 ❌
     * 文本分类 ❌
@@ -70,13 +71,14 @@ snownlp无法使用用户自定义的词典，因此无法修改词典。
 from interface import HanSeg
 
 CONFIG_PATH = "config.yaml"
+STOP_WORDS_PATH = "user_data/stop_words.txt"
 
 def test():
     # 初始化thulac引擎
-    seg1 = HanSeg('jieba', filt=True, config_path=CONFIG_PATH)
-    seg2 = HanSeg('thulac', filt=True, config_path=CONFIG_PATH)
-    seg3 = HanSeg('pkuseg', filt=True, config_path=CONFIG_PATH)
-    seg4 = HanSeg('snownlp', filt=True, config_path=CONFIG_PATH)
+    seg1 = HanSeg('jieba', multi_engines=True, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
+    seg2 = HanSeg('thulac', multi_engines=True, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
+    seg3 = HanSeg('pkuseg', multi_engines=True, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
+    seg4 = HanSeg('snownlp', multi_engines=True, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     text = "今天天气真好，适合出去散步。如果花火小姐是我的老婆，那么我将十分富有，这样我就再也不用打工了。想到这就觉得很开心！"
 
     seg1.suggest_freq(('今天', '天气'))
@@ -104,14 +106,14 @@ def test():
     print(seg2.sentiment_analysis(text))
     print(seg3.sentiment_analysis(text))
     print(seg4.sentiment_analysis(text))
-    
+
     print("增加单词")
-    # seg1.add_word("紫色心情") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
+    seg1.add_word("紫色心情") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
     seg2.add_word("紫色心情")
     seg3.add_word("紫色心情")
 
     print("删除单词")
-    # seg1.del_word("紫色心情") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
+    seg1.del_word("紫色心情") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
     seg2.del_word("紫色心情")
     seg3.del_word("紫色心情")
     
@@ -122,16 +124,16 @@ def test():
     seg2.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
     seg3.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
     seg4.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
-    
+
     print("多进程切分文件") # 无论使用什么引擎，都会使用pkuseg的类方法进行切分，使用pkuseg的配置
     seg1.cut_file_fast("user_data/input_file.txt", "user_data/output_file_fast.txt", workers=10)
-    
+
     # 如果代码中含有cut_file_fast，务必以
     # if __name__ == '__main__':
     #     Your_Function()
     # 的形式运行脚本，否则会有意料不到的后果。
     # 这是由于此方法设计了多进程操作。
-    
+
 if __name__ == '__main__':
     test()
 ```
@@ -142,14 +144,8 @@ if __name__ == '__main__':
 # You can modify the following configuration as needed, but don't delete any lines.
 # For the file path, if you don't need to set it, just make it an empty string.
 
-global:
-  multi_engines: true # use other engines while using some method that is not supported by current engine
-  cut_file_batch_size: 100
-
 jieba:
-  engine_name: "jieba"
   HMM: false
-  filt: true
   tune: true
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
@@ -161,13 +157,11 @@ jieba:
   cut_mode: "default" # default / full / search
 
 thulac:
-  engine_name: "thulac"
   model_path: ""
   user_dict: "user_data/user_dict.txt"
   stop_words: "user_data/stop_words.txt"
   t2s: false
   seg_only: false
-  filt: true # change to filt_by_stop -- add filt_by_pos later
   max_length: 50000
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
@@ -175,11 +169,9 @@ thulac:
   allowPOS: "ns n vn v" # seperated by space
 
 pkuseg:
-  engine_name: "pkuseg"
   model_name: "web" # news web medicine tourism default
-  user_dict: "user_data/user_dict.txt"
+  user_dict: "user_data/user_dict.txt" # set it to "default" if not needed, do not leave it empty
   stop_words: "user_data/stop_words.txt"
-  filt: true
   postag: true
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
@@ -188,9 +180,7 @@ pkuseg:
   verbose: false
 
 snownlp:
-  engine_name: "snownlp"
   stop_words: "user_data/stop_words.txt"
-  filt: true
 ```
 
 本项目旨在尽量统一各个库的接口并统一输出形式便于用户使用。如有建议请务必提出！

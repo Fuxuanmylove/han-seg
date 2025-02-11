@@ -16,24 +16,26 @@ ENGINE_MAP: Dict[str, HanSegBase] = {
 
 class HanSeg:
 
-    def __init__(self, engine_name: str = 'jieba', filt: bool = False, multi_engines: bool = True, config_path: str = "config.yaml"):
+    def __init__(self, engine_name: str = 'jieba', multi_engines: bool = True, filt: bool = False, stop_words_path: str = None, config_path: str = "config.yaml"):
         """
         :param engine: jieba / thulac / pkuseg / snownlp
         :param filt: whether to filter out stopwords
         :param config_path: path to config file
         """
-        self.config = load_config(config_path)
         self.engine_name = engine_name.lower()
-        self.filt = filt
         self.multi_engines = multi_engines
+        self.filt = filt
+        self.stop_words_path = stop_words_path
+        self.config = load_config(config_path)
 
         if self.engine_name not in ENGINE_MAP:
             raise HanSegError(f"Engine '{self.engine_name}' is not supported. Supported engines: jieba, thulac, pkuseg.")
         
         self._engine: HanSegBase = ENGINE_MAP[self.engine_name](
             self.engine_name,
-            self.filt,
             self.multi_engines,
+            self.filt,
+            self.stop_words_path,
             self.config.get(self.engine_name, {})
         )
 
