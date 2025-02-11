@@ -3,7 +3,7 @@ han-seg
 
 目的
 ========
-* 集成以下多种主流中文分词库并统一标准接口：
+* 集成以下（包括但不限于）多种主流中文分词库并统一标准接口：
     * jieba
     * thulac
     * pkuseg
@@ -25,14 +25,14 @@ han-seg
     * 按停止词过滤输出 ✔️
     * 拼音转换 ✔️
     * 文件词频统计 ✔️
+    * 繁体转简体 ✔️ 使用SnowNLP
+    * 文本总结 ✔️ 使用SnowNLP
+    * 文本相似度 ✔️ 使用SnowNLP
     * 即时修改用户词典 ✔️ 需要注意，使用thulac和pkuseg时此操作可能会显著降低程序运行效率
     * 滞后修改用户词典 ❌
     * 修改停止词字典 ❌
     * 按词性过滤输出 ❌
     * 文本分类 ❌
-    * 文本总结 ❌
-    * 繁体转简体 ❌
-    * 文本相似度 ❌
     * 词向量 ❌
     * hanlp特有功能 ❌
 
@@ -84,14 +84,21 @@ def test():
     seg2 = HanSeg('thulac', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。"
+    text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。中国有句古话，识时务者为俊杰。"
+    text2 = "不要笑挑战么，有点意思。"
     tradition = "「繁體字」「繁體中文」的叫法在臺灣亦很常見。"
     
-    print("拼音")
+    print("拼音") # 基于SnowNLP的实现
     print(HanSeg.pinyin(text))
     
-    print("繁体转简体")
+    print("繁体转简体") # 基于SnowNLP的实现
     print(HanSeg.t2s(tradition))
+    
+    print("相似度") # 基于SnowNLP的实现
+    print(HanSeg.similarity(text, text2))
+    
+    print("摘要") # 基于SnowNLP的实现
+    print(HanSeg.summary(text, limit=2))
 
     seg1.suggest_freq(('今天', '天气'))
 
@@ -162,8 +169,6 @@ def test():
     # 的形式运行脚本，否则会有意料不到的后果。
     # 这是由于此方法设计了多进程操作。
 
-if __name__ == '__main__':
-    test()
 ```
 
 使用配置文件来控制引擎的工作方式

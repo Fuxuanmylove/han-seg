@@ -12,14 +12,21 @@ def test():
     seg2 = HanSeg('thulac', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。"
+    text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。中国有句古话，识时务者为俊杰。"
+    text2 = "不要笑挑战么，有点意思。"
     tradition = "「繁體字」「繁體中文」的叫法在臺灣亦很常見。"
     
-    print("拼音")
+    print("拼音") # 基于SnowNLP的实现
     print(HanSeg.pinyin(text))
     
-    print("繁体转简体")
+    print("繁体转简体") # 基于SnowNLP的实现
     print(HanSeg.t2s(tradition))
+    
+    print("相似度") # 基于SnowNLP的实现
+    print(HanSeg.similarity(text, text2))
+    
+    print("摘要") # 基于SnowNLP的实现
+    print(HanSeg.summary(text, limit=2))
 
     seg1.suggest_freq(('今天', '天气'))
 

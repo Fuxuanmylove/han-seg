@@ -117,3 +117,13 @@ class HanSeg:
     def t2s(text: str) -> str:
         """Convert traditional Chinese to simplified Chinese."""
         return SnowNLP(text).han
+
+    @staticmethod
+    def similarity(text1: str, text2: str) -> List[float]:
+        """Return the similarity between two texts."""
+        return SnowNLP(text1).sim(text2)
+
+    @staticmethod
+    def summary(text: str, limit: int = 5) -> List[str]:
+        """Return the summary of the text."""
+        return SnowNLP(text).summary(limit)
