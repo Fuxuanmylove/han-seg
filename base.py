@@ -113,7 +113,8 @@ class HanSegBase:
     def sentiment_analysis(self, text: str) -> float:
         if self.multi_engines:
             logging.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
-            return SnowNLP(text).sentiments
+            processed_text = ' '.join(self.cut(text))
+            return SnowNLP(processed_text).sentiments
         raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method. You can set multi_engines=true in config.")
     
     def cut_file(self, input_path: str, output_path: str) -> None:
