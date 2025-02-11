@@ -52,9 +52,9 @@ class HanSeg:
         """Only for jieba"""
         self._engine.suggest_freq(words)
 
-    def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
+    def keywords(self, text: str, limit: int = 10) -> Union[List[str], List[Tuple[str, float]]]:
         """Keywordss extract method, return a list of keywordss or (keywords, weight) tuples, depends on the config."""
-        return self._engine.keywords(text)
+        return self._engine.keywords(text, limit)
 
     def sentiment_analysis(self, text: str) -> float:
         """Other engines will use snownlp if multi_engines=true."""

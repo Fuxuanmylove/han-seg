@@ -50,12 +50,12 @@ class HanSegJieba(HanSegBase):
         
     def suggest_freq(self, words) -> None:
         jieba.suggest_freq(words, tune=self.tune)
-        
-    def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
+
+    def keywords(self, text: str, limit: int = 10) -> Union[List[str], List[Tuple[str, float]]]:
         if self.keywords_method == 'tfidf':
-            return analyse.extract_tags(text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+            return analyse.extract_tags(text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
         elif self.keywords_method == 'textrank':
-            return analyse.textrank(text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+            return analyse.textrank(text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
 
     def sentiment_analysis(self, text: str) -> float:
         return super().sentiment_analysis(text)

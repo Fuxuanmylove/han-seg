@@ -27,10 +27,10 @@ def test():
     print(seg4.pos(text))
 
     print("关键词提取")
-    print(seg1.keywords(text))
-    print(seg2.keywords(text))
-    print(seg3.keywords(text))
-    print(seg4.keywords(text))
+    print(seg1.keywords(text, limit=2))
+    print(seg2.keywords(text, limit=2))
+    print(seg3.keywords(text, limit=2))
+    print(seg4.keywords(text, limit=2))
 
     print("情感分析")
     print(seg1.sentiment_analysis(text))
@@ -51,13 +51,13 @@ def test():
     # SnowNLP不支持增加或者删除单词
 
     print("切分文件") # 自定义切分文件，不支持多进程切分
-    seg1.cut_file("input_file.txt", "output_file.txt")
-    seg2.cut_file("input_file.txt", "output_file.txt")
-    seg3.cut_file("input_file.txt", "output_file.txt")
-    seg4.cut_file("input_file.txt", "output_file.txt")
+    seg1.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
+    seg2.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
+    seg3.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
+    seg4.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
     
     print("多进程切分文件") # 无论使用什么引擎，都会使用pkuseg的类方法进行切分，使用pkuseg的配置
-    seg1.cut_file_fast("input_file.txt", "output_file_fast.txt", workers=10)
+    seg1.cut_file_fast("user_data/input_file.txt", "user_data/output_file_fast.txt", workers=10)
     
     # 如果代码中含有cut_file_fast，务必以
     # if __name__ == '__main__':

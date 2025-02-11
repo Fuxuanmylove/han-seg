@@ -46,8 +46,6 @@ class HanSegBase:
             if self.multi_engines or self.engine_name == 'jieba':
                 analyse.set_stop_words(self.stop_words_path)
 
-        self.topK = self.local_config.get('topK', 20)
-
         if self.engine_name != 'snownlp':
             self.keywords_method = self.local_config.get('keywords_method', '').lower()
             if self.keywords_method not in ('tfidf', 'textrank') and self.multi_engines:
@@ -100,14 +98,14 @@ class HanSegBase:
     def suggest_freq(self, words) -> None:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
-    def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
+    def keywords(self, text: str, limit: int = 10) -> Union[List[str], List[Tuple[str, float]]]:
         if self.multi_engines:
             logging.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
             processed_text = ' '.join(self.cut(text))
             if self.keywords_method == 'tfidf':
-                return analyse.extract_tags(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+                return analyse.extract_tags(processed_text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
             elif self.keywords_method == 'textrank':
-                return analyse.textrank(processed_text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
+                return analyse.textrank(processed_text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
         raise HanSegError("Multi-engine mode is disabled and thulac does not support keywords extract. You can set multi_engines=true in config.")
 
     def sentiment_analysis(self, text: str) -> float:

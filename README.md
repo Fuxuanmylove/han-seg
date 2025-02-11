@@ -94,10 +94,10 @@ def test():
     print(seg4.pos(text))
 
     print("关键词提取")
-    print(seg1.keywords(text))
-    print(seg2.keywords(text))
-    print(seg3.keywords(text))
-    print(seg4.keywords(text))
+    print(seg1.keywords(text, limit=2))
+    print(seg2.keywords(text, limit=2))
+    print(seg3.keywords(text, limit=2))
+    print(seg4.keywords(text, limit=2))
 
     print("情感分析")
     print(seg1.sentiment_analysis(text))
@@ -118,38 +118,79 @@ def test():
     # SnowNLP不支持增加或者删除单词
 
     print("切分文件") # 自定义切分文件，不支持多进程切分
-    seg1.cut_file("input_file.txt", "output_file.txt")
-    seg2.cut_file("input_file.txt", "output_file.txt")
-    seg3.cut_file("input_file.txt", "output_file.txt")
-    seg4.cut_file("input_file.txt", "output_file.txt")
+    seg1.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
+    seg2.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
+    seg3.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
+    seg4.cut_file("user_data/input_file.txt", "user_data/output_file.txt")
     
     print("多进程切分文件") # 无论使用什么引擎，都会使用pkuseg的类方法进行切分，使用pkuseg的配置
-    seg1.cut_file_fast("input_file.txt", "output_file_fast.txt", workers=10)
+    seg1.cut_file_fast("user_data/input_file.txt", "user_data/output_file_fast.txt", workers=10)
     
     # 如果代码中含有cut_file_fast，务必以
     # if __name__ == '__main__':
     #     Your_Function()
     # 的形式运行脚本，否则会有意料不到的后果。
     # 这是由于此方法设计了多进程操作。
+    
+if __name__ == '__main__':
+    test()
 ```
 
 使用配置文件来控制引擎的工作方式
 * config.yaml
 ```yaml
+# You can modify the following configuration as needed, but don't delete any lines.
+# For the file path, if you don't need to set it, just make it an empty string.
+
 global:
-   ...
+  multi_engines: true # use other engines while using some method that is not supported by current engine
+  cut_file_batch_size: 100
 
 jieba:
-   ...
+  engine_name: "jieba"
+  HMM: false
+  filt: true
+  tune: true
+  withWeight: false
+  allowPOS: "ns n vn v" # seperated by space
+  dictionary: "" # empty string if not needed
+  user_dict: "user_data/user_dict.txt" # empty string if not needed
+  stop_words: "user_data/stop_words.txt" # empty string if not needed
+  idf_path: ""
+  keywords_method: "textrank" # textrank or tfidf
+  cut_mode: "default" # default / full / search
 
 thulac:
-   ...
+  engine_name: "thulac"
+  model_path: ""
+  user_dict: "user_data/user_dict.txt"
+  stop_words: "user_data/stop_words.txt"
+  t2s: false
+  seg_only: false
+  filt: true # change to filt_by_stop -- add filt_by_pos later
+  max_length: 50000
+  keywords_method: "textrank" # textrank or tfidf
+  idf_path: ""
+  withWeight: false
+  allowPOS: "ns n vn v" # seperated by space
 
 pkuseg:
-   ...
+  engine_name: "pkuseg"
+  model_name: "web" # news web medicine tourism default
+  user_dict: "user_data/user_dict.txt"
+  stop_words: "user_data/stop_words.txt"
+  filt: true
+  postag: true
+  keywords_method: "textrank" # textrank or tfidf
+  idf_path: ""
+  withWeight: false
+  allowPOS: "ns n vn v" # seperated by space
+  verbose: false
 
 snownlp:
-   ...
+  engine_name: "snownlp"
+  stop_words: "user_data/stop_words.txt"
+  filt: true
 ```
 
 本项目旨在尽量统一各个库的接口并统一输出形式便于用户使用。如有建议请务必提出！

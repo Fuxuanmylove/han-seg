@@ -17,10 +17,10 @@ class HanSegSnowNLP(HanSegBase):
             return [(word, tag) for word, tag in SnowNLP(text).tags if word not in self.stop_words]
         return [(word, tag) for word, tag in SnowNLP(text).tags]
     
-    def keywords(self, text: str) -> List[str]:
+    def keywords(self, text: str, limit: int = 10) -> List[str]:
         if self.filt:
-            return [word for word in SnowNLP(text).keywords(self.topK) if word not in self.stop_words]
-        return SnowNLP(text).keywords(self.topK)
+            return [word for word in SnowNLP(text).keywords(limit) if word not in self.stop_words]
+        return SnowNLP(text).keywords(limit)
     
     def sentiment_analysis(self, text: str) -> float:
         return SnowNLP(text).sentiments
