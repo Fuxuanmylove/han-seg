@@ -9,29 +9,30 @@ from snownlp import SnowNLP
 
 
 class HanSegBase:
-    def __init__(self, engine_name: str, multi_engines: bool, filt: bool, stop_words_path: str, local_config: dict):
+    def __init__(self, engine_name: str, multi_engines: bool, user_dict: str, filt: bool, stop_words_path: str, local_config: dict):
 
         self.local_config = local_config or {}
         self.engine_name = engine_name
         self.multi_engines = multi_engines
         self.filt = filt
+        self.user_dict_path = user_dict
 
-        if self.engine_name != 'snownlp':
-            self.user_dict_path = self.local_config.get('user_dict', '')
-            if not (self.engine_name == 'pkuseg' and self.user_dict_path == 'default'):
+        if not (self.engine_name == 'pkuseg' and self.user_dict_path == 'default'):
+            if self.user_dict_path is not None:
                 if not os.path.exists(self.user_dict_path):
-                    raise HanSegError(f"User dictionary file {self.user_dict_path} not found.\nIf you don't need to set a user dict, leave user_dict an empty string in your config.")
+                    raise HanSegError(f"User dictionary file {self.user_dict_path} not found.")
                 self._clean_file(self.user_dict_path)
 
         self.stop_words = set()
         if self.filt:
             self.stop_words_path = stop_words_path
-            if not os.path.exists(self.stop_words_path):
-                raise HanSegError("Cannot find stop words file when you turn on the filter.")
-            self._clean_file(self.stop_words_path)
-            self.stop_words = HanSegBase._check_and_get_stop_words(self.stop_words_path)
-            if self.multi_engines or self.engine_name == 'jieba':
-                analyse.set_stop_words(self.stop_words_path)
+            if self.stop_words_path is not None:
+                if not os.path.exists(self.stop_words_path):
+                    raise HanSegError(f"Stop words file {self.stop_words_path} not found.\nIf you don't need it, please set filt to False.")
+                self._clean_file(self.stop_words_path)
+                if self.multi_engines or self.engine_name == 'jieba':
+                    analyse.set_stop_words(self.stop_words_path)
+                self.stop_words = HanSegBase._check_and_get_stop_words(self.stop_words_path)
 
         if self.engine_name != 'snownlp':
             self.keywords_method = self.local_config.get('keywords_method', '').lower()
@@ -53,32 +54,29 @@ class HanSegBase:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
     def add_word(self, word: str, freq: int = 1, flag: str = None) -> None:
-        if self.engine_name != 'snownlp':
-            word = word.strip()
-            flag = flag.strip() if flag else None
-            if word:
-                line = f"{word} {flag}" if flag else word
-                with open(self.user_dict_path, 'a', encoding='utf-8') as f:
-                    f.write(f"\n{line}\n")
-                    self._reload_engine()
-        else:
-            raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
+        if not self.user_dict_path:
+            raise HanSegError("User dict is not set.")
+        word = word.strip()
+        flag = flag.strip() if flag else None
+        if word:
+            line = f"{word} {flag}" if flag else word
+            with open(self.user_dict_path, 'a', encoding='utf-8') as f:
+                f.write(f"\n{line}\n")
+                self._reload_engine()
 
     def del_word(self, word: str) -> None:
-        if self.engine_name != 'snownlp':
-            with open(self.user_dict_path, 'r', encoding='utf-8') as f:
-                lines = []
-                for line in f:
-                    lst = line.split()
-                    if lst and lst[0] != word:
-                        lines.append(line)
-                        
-            with open(self.user_dict_path, 'w', encoding='utf-8') as f:
-                f.writelines(lines)
-                
-            self._reload_engine()
-        else:
-            raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
+        if not self.user_dict_path:
+            raise HanSegError("User dict is not set.")
+        with open(self.user_dict_path, 'r', encoding='utf-8') as f:
+            lines = []
+            for line in f:
+                lst = line.split()
+                if lst and lst[0] != word:
+                    lines.append(line)
+                    
+        with open(self.user_dict_path, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
+        self._reload_engine()
 
     def suggest_freq(self, words) -> None:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")

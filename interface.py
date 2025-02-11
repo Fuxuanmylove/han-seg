@@ -16,7 +16,7 @@ ENGINE_MAP: Dict[str, HanSegBase] = {
 
 class HanSeg:
 
-    def __init__(self, engine_name: str = 'jieba', multi_engines: bool = True, filt: bool = False, stop_words_path: str = None, config_path: str = "config.yaml"):
+    def __init__(self, engine_name: str = 'jieba', multi_engines: bool = True, user_dict: str = None, filt: bool = False, stop_words_path: str = None, config_path: str = "config.yaml"):
         """
         :param engine: jieba / thulac / pkuseg / snownlp
         :param filt: whether to filter out stopwords
@@ -24,6 +24,7 @@ class HanSeg:
         """
         self.engine_name = engine_name.lower()
         self.multi_engines = multi_engines
+        self.user_dict = user_dict
         self.filt = filt
         self.stop_words_path = stop_words_path
         self.config = HanSegBase._load_config(config_path)
@@ -34,6 +35,7 @@ class HanSeg:
         self._engine: HanSegBase = ENGINE_MAP[self.engine_name](
             self.engine_name,
             self.multi_engines,
+            self.user_dict,
             self.filt,
             self.stop_words_path,
             self.config.get(self.engine_name, {})

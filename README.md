@@ -22,7 +22,7 @@ han-seg
     * 按用户配置对文件进行分词（不支持多进程） ✔️
     * 快速切分文件（各引擎接口一致使用pkuseg快速切分文件接口） ✔️
     * 按停止词过滤输出 ✔️
-    * 即时修改用户词典 ✔️
+    * 即时修改用户词典 ✔️ 需要注意，使用thulac和pkuseg时此操作可能会显著降低程序运行效率
     * 滞后修改用户词典 ❌
     * 修改停止词字典 ❌
     * 按词性过滤输出 ❌
@@ -70,15 +70,16 @@ snownlp无法使用用户自定义的词典，因此无法修改词典。
 ```python
 from interface import HanSeg
 
-CONFIG_PATH = "config.yaml"
+USER_DICT = "user_data/user_dict.txt"
 STOP_WORDS_PATH = "user_data/stop_words.txt" # If you set filt=False, you don't need to specify a stop words path.
+CONFIG_PATH = "config.yaml"
 
 def test():
     # 初始化thulac引擎
-    seg1 = HanSeg('jieba', multi_engines=True, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    seg2 = HanSeg('thulac', multi_engines=True, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    seg3 = HanSeg('pkuseg', multi_engines=True, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    seg4 = HanSeg('snownlp', multi_engines=True, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
+    seg1 = HanSeg('jieba', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
+    seg2 = HanSeg('thulac', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
+    seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
+    seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     text = "今天天气真好，适合出去散步。如果花火小姐是我的老婆，那么我将十分富有，这样我就再也不用打工了。想到这就觉得很开心！"
 
     seg1.suggest_freq(('今天', '天气'))
@@ -111,13 +112,15 @@ def test():
     seg1.add_word("紫色心情") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
     seg2.add_word("紫色心情")
     seg3.add_word("紫色心情")
+    seg4.add_word("紫色心情")
 
     print("删除单词")
     seg1.del_word("紫色心情") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
     seg2.del_word("紫色心情")
     seg3.del_word("紫色心情")
+    seg4.del_word("紫色心情")
     
-    # SnowNLP不支持增加或者删除单词
+    # 虽然可以让SnowNLP操作用户词典，但是这种行为不会影响SnowNLP的行为与结果。
 
     print("切分文件") # 自定义切分文件，不支持多进程切分
     seg1.cut_file("user_data/input_file.txt", "user_data/output_file.txt", batch_size=100)

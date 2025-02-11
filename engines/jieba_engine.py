@@ -9,15 +9,16 @@ from snownlp import SnowNLP
 
 class HanSegJieba(HanSegBase):
     """Implementation based on jieba."""
-    def __init__(self, engine_name: str, multi_engines: bool, filt: bool, stop_words_path: str, local_config: dict):
-        super().__init__(engine_name, multi_engines, filt, stop_words_path, local_config)
+    def __init__(self, engine_name: str, multi_engines: bool, user_dict: str, filt: bool, stop_words_path: str, local_config: dict):
+        super().__init__(engine_name, multi_engines, user_dict, filt, stop_words_path, local_config)
         self.HMM = local_config.get('HMM', True)
         self.tune = local_config.get('tune', True)
         self.dictionary_path = local_config.get('dictionary', None)
         if self.dictionary_path:
             jieba.set_dictionary(self.dictionary_path)
 
-        jieba.load_userdict(self.user_dict_path)
+        if user_dict:
+            jieba.load_userdict(self.user_dict_path)
 
         self.cut_mode = local_config.get('cut_mode', 'default').lower()
         if self.cut_mode not in ('default', 'full', 'search'):

@@ -8,8 +8,8 @@ from snownlp import SnowNLP
 
 class HanSegPkuseg(HanSegBase):
     """Implementation based on pkuseg."""
-    def __init__(self, engine_name: str, multi_engines: bool, filt: bool, stop_words_path: str, local_config: dict):
-        super().__init__(engine_name, multi_engines, filt, stop_words_path, local_config)
+    def __init__(self, engine_name: str, multi_engines: bool, user_dict: str, filt: bool, stop_words_path: str, local_config: dict):
+        super().__init__(engine_name, multi_engines, user_dict, filt, stop_words_path, local_config)
         
         self.model_name = local_config.get('model_name', 'default')
         self.postag = local_config.get('postag', True)
@@ -33,22 +33,15 @@ class HanSegPkuseg(HanSegBase):
         return self._pkuseg.cut(text)
     
     def add_word(self, word: str, freq: int = 1, flag: str = None) -> None:
-        #TODO: immediate / after close
-        if not self.user_dict_path:
-            raise HanSegError("user_dict is not set in config.")
-        
         if self.user_dict_path == 'default':
             raise HanSegError("You cannot modify the default user_dict.")
-        
+
         super().add_word(word, freq, flag)
 
     def del_word(self, word: str) -> None:
-        if not self.user_dict_path:
-            raise HanSegError("user_dict is not set in config.")
-        
         if self.user_dict_path == 'default':
             raise HanSegError("You cannot modify the default user_dict.")
-        
+
         super().del_word(word)
 
     def keywords(self, text: str, limit: int = 10) -> Union[List[str], List[Tuple[str, float]]]:

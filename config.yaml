@@ -7,16 +7,12 @@ jieba:
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
   dictionary: "" # empty string if not needed
-  user_dict: "user_data/user_dict.txt" # empty string if not needed
-  stop_words: "user_data/stop_words.txt" # empty string if not needed
   idf_path: ""
   keywords_method: "textrank" # textrank or tfidf
   cut_mode: "default" # default / full / search
 
 thulac:
   model_path: ""
-  user_dict: "user_data/user_dict.txt"
-  stop_words: "user_data/stop_words.txt"
   t2s: false
   seg_only: false
   max_length: 50000
@@ -27,8 +23,6 @@ thulac:
 
 pkuseg:
   model_name: "web" # news web medicine tourism default
-  user_dict: "user_data/user_dict.txt" # set it to "default" if not needed, do not leave it empty
-  stop_words: "user_data/stop_words.txt"
   postag: true
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
@@ -37,4 +31,3 @@ pkuseg:
   verbose: false
 
 snownlp:
-  stop_words: "user_data/stop_words.txt"
