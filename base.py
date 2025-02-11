@@ -1,19 +1,11 @@
 # base.py
 
-from typing import List, TextIO, Tuple, Set, Union
+from typing import List, Tuple, Set, Union
 from jieba import analyse
 import os
 import yaml
 import logging
 from snownlp import SnowNLP
-
-def load_config(config_path: str) -> dict:
-    """
-    Load config from yaml file.
-    """
-    with open(config_path, 'r', encoding='utf-8') as f:
-        config = yaml.safe_load(f)
-    return config
 
 
 class HanSegBase:
@@ -21,9 +13,6 @@ class HanSegBase:
 
         self.local_config = local_config or {}
         self.engine_name = engine_name
-        if not self.engine_name:
-            raise HanSegError("Engine name is not specified in the config.")
-
         self.multi_engines = multi_engines
         self.filt = filt
 
@@ -115,17 +104,18 @@ class HanSegBase:
         with open(input_path, 'r', encoding='utf-8') as f_in, \
             open(output_path, 'w', encoding='utf-8') as f_out:
             batch = []
+            processed_lines = []
+
             for line in f_in:
                 line = line.strip()
                 if line:
                     batch.append(line)
                     if len(batch) >= batch_size:
-                        processed = [' '.join(self.cut(l)) + '\n' for l in batch]
-                        f_out.writelines(processed)
+                        processed_lines.extend([' '.join(self.cut(l)) + '\n' for l in batch])
                         batch = []
             if batch:
-                processed = [' '.join(self.cut(l)) + '\n' for l in batch]
-                f_out.writelines(processed)
+                processed_lines.extend([' '.join(self.cut(l)) + '\n' for l in batch])
+            f_out.writelines(processed_lines)
 
     def _reload_engine(self) -> None:
         raise NotImplementedError
@@ -144,6 +134,13 @@ class HanSegBase:
         with open(stop_words_path, 'r', encoding='utf-8') as f:
             stop_words = {line.strip() for line in f if line.strip()}
         return stop_words
+    
+    @staticmethod
+    def _load_config(config_path: str) -> dict:
+        """Load config from yaml file."""
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+        return config
 
 class HanSegError(Exception):
     pass

@@ -1,6 +1,6 @@
 # interface.py
 
-from base import HanSegBase, HanSegError, load_config
+from base import HanSegBase, HanSegError
 from typing import List, Tuple, Dict, Union
 from engines.jieba_engine import HanSegJieba
 from engines.thulac_engine import HanSegThulac
@@ -26,7 +26,7 @@ class HanSeg:
         self.multi_engines = multi_engines
         self.filt = filt
         self.stop_words_path = stop_words_path
-        self.config = load_config(config_path)
+        self.config = HanSegBase._load_config(config_path)
 
         if self.engine_name not in ENGINE_MAP:
             raise HanSegError(f"Engine '{self.engine_name}' is not supported. Supported engines: jieba, thulac, pkuseg.")

@@ -3,7 +3,7 @@
 from interface import HanSeg
 
 CONFIG_PATH = "config.yaml"
-STOP_WORDS_PATH = "user_data/stop_words.txt"
+STOP_WORDS_PATH = "user_data/stop_words.txt" # If you set filt=False, you don't need to specify a stop words path.
 
 def test():
     # 初始化thulac引擎
