@@ -18,6 +18,7 @@ class HanSegJieba(HanSegBase):
         if self.dictionary_path:
             jieba.set_dictionary(self.dictionary_path)
 
+        self._clean_file(self.user_dict_path)
         jieba.load_userdict(self.user_dict_path)
 
         self.cut_mode = local_config.get('cut_mode', 'default').lower()
@@ -57,7 +58,7 @@ class HanSegJieba(HanSegBase):
             return analyse.textrank(text, topK=self.topK, withWeight=self.withWeight, allowPOS=self.allowPOS)
 
     def sentiment_analysis(self, text: str) -> float:
-        super().sentiment_analysis(text)
+        return super().sentiment_analysis(text)
     
     def _process_chunk(self, lines: List[str]) -> List[str]:
         return [' '.join(self.cut(line)) + '\n' for line in lines]

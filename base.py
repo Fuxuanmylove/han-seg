@@ -7,18 +7,6 @@ import yaml
 import logging
 from snownlp import SnowNLP
 
-
-def check_and_get_stop_words(config: dict) -> Set[str]:
-    """
-    Check if the stop words file exists, and return the set of stop words.
-    """
-    stop_words_path = config.get('stop_words', '')
-    if not stop_words_path:
-        raise HanSegError("Stop words file path is not specified in the config file when filt=true.")
-    with open(stop_words_path, 'r', encoding='utf-8') as f:
-        stop_words = {line.strip() for line in f if line.strip()}
-    return stop_words_path, stop_words
-
 def load_config(config_path: str) -> dict:
     """
     Load config from yaml file.
@@ -50,9 +38,13 @@ class HanSegBase:
 
         self.stop_words = set()
         if self.filt:
-            stop_words_path, self.stop_words = check_and_get_stop_words(local_config)
+            self.stop_words_path = self.local_config.get('stop_words', '')
+            if not self.stop_words_path:
+                raise HanSegError("Stop words file path is not specified in the config file when filt=true.")
+            self._clean_file(self.stop_words_path)
+            self.stop_words = HanSegBase._check_and_get_stop_words(self.stop_words_path)
             if self.multi_engines or self.engine_name == 'jieba':
-                analyse.set_stop_words(stop_words_path)
+                analyse.set_stop_words(self.stop_words_path)
 
         self.topK = self.local_config.get('topK', 20)
 
@@ -142,6 +134,21 @@ class HanSegBase:
 
     def _reload_engine(self) -> None:
         raise NotImplementedError
+    
+    def _clean_file(self, file_path: str) -> None:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = {line.strip() for line in f if line.strip()}
+
+        with open(file_path, 'w', encoding='utf-8') as f:
+            for line in lines:
+                f.write(line + '\n')
+                
+    @staticmethod
+    def _check_and_get_stop_words(stop_words_path: str) -> Set[str]:
+        """Check if the stop words file exists, and return the set of stop words."""
+        with open(stop_words_path, 'r', encoding='utf-8') as f:
+            stop_words = {line.strip() for line in f if line.strip()}
+        return stop_words_path, stop_words
     
 class HanSegError(Exception):
     pass

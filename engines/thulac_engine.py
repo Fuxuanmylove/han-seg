@@ -44,10 +44,10 @@ class HanSegThulac(HanSegBase):
         super().del_word(word)
 
     def keywords(self, text: str) -> Union[List[str], List[Tuple[str, float]]]:
-        super().keywords(text)
+        return super().keywords(text)
 
     def sentiment_analysis(self, text: str) -> float:
-        super().sentiment_analysis(text)
+        return super().sentiment_analysis(text)
   
     def _reload_engine(self) -> None:
         self._thulac = thulac(

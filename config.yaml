@@ -7,7 +7,7 @@ global:
 
 jieba:
   engine_name: "jieba"
-  HMM: true
+  HMM: false
   filt: true
   tune: true
   topK: 5
@@ -27,7 +27,7 @@ thulac:
   stop_words: "user_data/stop_words.txt"
   t2s: false
   seg_only: false
-  filt: true
+  filt: true # change to filt_by_stop -- add filt_by_pos later
   max_length: 50000
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
@@ -47,6 +47,7 @@ pkuseg:
   topK: 5
   withWeight: false
   allowPOS: "ns n vn v" # seperated by space
+  verbose: false
 
 snownlp:
   engine_name: "snownlp"
