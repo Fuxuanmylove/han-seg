@@ -50,9 +50,9 @@ class HanSeg:
         """Returns the tokens and their corresponding POS tags."""
         return self._engine.pos(text)
         
-    def add_word(self, word: str, freq: int = 1, tag: str = None):
+    def add_word(self, word: str, freq: int = 1, flag: str = None):
         """Dynamically add words or add words to user_dict, if supported by the engine."""
-        self._engine.add_word(word, freq, tag)
+        self._engine.add_word(word, freq, flag)
 
     def del_word(self, word: str):
         """Dynamically delete words or delete words from user_dict, if supported by the engine."""

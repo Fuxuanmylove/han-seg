@@ -49,13 +49,16 @@ def test():
     print(seg4.sentiment_analysis(text))
 
     print("增加单词")
-    seg1.add_word("哈基米") # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
-    seg2.add_word("哈基米")
-    seg3.add_word("哈基米")
-    seg4.add_word("哈基米")
+    # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
+    seg1.add_word("哈基米", freq=100, flag='n')
+    # 下面三个引擎中，传入freq将会被忽略。
+    seg2.add_word("哈基米", flag='n')
+    seg3.add_word("哈基米", flag='n')
+    seg4.add_word("哈基米", flag='n')
 
     print("删除单词")
-    seg1.del_word("哈基米") # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
+    # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
+    seg1.del_word("哈基米")
     seg2.del_word("哈基米")
     seg3.del_word("哈基米")
     seg4.del_word("哈基米")
