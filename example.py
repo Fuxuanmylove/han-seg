@@ -13,6 +13,9 @@ def test():
     seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。"
+    
+    print("拼音")
+    print(HanSeg.pinyin(text))
 
     seg1.suggest_freq(('今天', '天气'))
 
@@ -60,13 +63,19 @@ def test():
     # 虽然可以让SnowNLP操作用户词典，但是这种行为不会影响SnowNLP的行为与结果。
 
     print("切分文件") # 自定义切分文件，不支持多进程切分
-    seg1.cut_file("user_data/input_file.txt", "user_data/output_file.txt", batch_size=100)
-    seg2.cut_file("user_data/input_file.txt", "user_data/output_file.txt", batch_size=100)
-    seg3.cut_file("user_data/input_file.txt", "user_data/output_file.txt", batch_size=100)
-    seg4.cut_file("user_data/input_file.txt", "user_data/output_file.txt", batch_size=100)
+    seg1.cut_file("user_data/input_file.txt", "user_data/output_file1.txt", batch_size=100)
+    seg2.cut_file("user_data/input_file.txt", "user_data/output_file2.txt", batch_size=100)
+    seg3.cut_file("user_data/input_file.txt", "user_data/output_file3.txt", batch_size=100)
+    seg4.cut_file("user_data/input_file.txt", "user_data/output_file4.txt", batch_size=100)
 
     print("多进程切分文件") # 无论使用什么引擎，都会使用pkuseg的类方法进行切分，使用pkuseg的配置
     seg1.cut_file_fast("user_data/input_file.txt", "user_data/output_file_fast.txt", workers=10)
+    
+    print("词频统计")
+    seg1.words_count("user_data/words_count_input.txt", "user_data/words_count_output1.txt")
+    seg2.words_count("user_data/words_count_input.txt", "user_data/words_count_output2.txt")
+    seg3.words_count("user_data/words_count_input.txt", "user_data/words_count_output3.txt")
+    seg4.words_count("user_data/words_count_input.txt", "user_data/words_count_output4.txt")
 
     # 如果代码中含有cut_file_fast，务必以
     # if __name__ == '__main__':

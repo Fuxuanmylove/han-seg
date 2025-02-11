@@ -6,6 +6,7 @@ from engines.jieba_engine import HanSegJieba
 from engines.thulac_engine import HanSegThulac
 from engines.pkuseg_engine import HanSegPkuseg
 from engines.snownlp_engine import HanSegSnowNLP
+from snownlp import SnowNLP
 
 ENGINE_MAP: Dict[str, HanSegBase] = {
     'jieba': HanSegJieba,
@@ -102,3 +103,12 @@ class HanSeg:
             postag=postag,
             verbose=verbose,
         )
+        
+    def words_count(self, input_file: str, output_file: str) -> None:
+        """Count the words in a file, and save the result to output_file."""
+        self._engine.words_count(input_file, output_file)
+    
+    @staticmethod
+    def pinyin(text: str) -> List[str]:
+        """Return the pinyin of the text."""
+        return SnowNLP(text).pinyin

@@ -1,5 +1,6 @@
 # base.py
 
+from collections import Counter
 from typing import List, Tuple, Set, Union
 from jieba import analyse
 import os
@@ -114,6 +115,23 @@ class HanSegBase:
             if batch:
                 processed_lines.extend([' '.join(self.cut(l)) + '\n' for l in batch])
             f_out.writelines(processed_lines)
+            
+    def words_count(self, input_file: str, output_file: str) -> None:
+        word_counts = Counter()
+        
+        with open(input_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    words = self.cut(line)
+                    if self.filt:
+                        word_counts.update([word for word in words if word not in self.stop_words])
+                    else:
+                        word_counts.update(words)
+    
+        with open(output_file, 'w', encoding='utf-8') as f:
+            for word, count in word_counts.most_common():
+                f.write(f"{word} {count}\n")
 
     def _reload_engine(self) -> None:
         raise NotImplementedError

@@ -16,24 +16,24 @@ han-seg
 ========
 * 如下：
     * 标准分词 ✔️
+    * 带位置信息的分词 ✔️
     * 词性标注 ✔️
     * 关键词提取 ✔️
-    * 情感分析 ✔️
+    * 情感分析 ✔️ 各引擎统一使用snownlp的情感分析接口
     * 按用户配置对文件进行分词（不支持多进程） ✔️
-    * 快速切分文件（各引擎接口一致使用pkuseg快速切分文件接口） ✔️
+    * 快速切分文件 ✔️ 各引擎接口一致使用pkuseg快速切分文件接口，支持多进程
     * 按停止词过滤输出 ✔️
-    * 带位置信息的分词 ✔️
+    * 拼音转换 ✔️
+    * 文件词频统计 ✔️
     * 即时修改用户词典 ✔️ 需要注意，使用thulac和pkuseg时此操作可能会显著降低程序运行效率
     * 滞后修改用户词典 ❌
     * 修改停止词字典 ❌
     * 按词性过滤输出 ❌
     * 文本分类 ❌
     * 文本总结 ❌
-    * 拼音转换 ❌
     * 繁体转简体 ❌
     * 文本相似度 ❌
     * 词向量 ❌
-    * 词频统计 ❌
     * hanlp特有功能 ❌
 
 ## 功能支持表
@@ -49,6 +49,7 @@ han-seg
 | 切分文件（带位置）     | ✔️    | ✔️     | ✔️     | ✔️      |
 | 按停止词过滤输出     | ✔️    | ✔️     | ✔️     | ✔️      |
 | 修改字典     | ✔️    | ✔️     | ✔️     | ✔️      |
+| 文件词频统计     | ✔️    | ✔️     | ✔️     | ✔️      |
 
 *代表需启用多引擎模式
 
@@ -62,7 +63,7 @@ jieba引擎独有的suggest_freq功能，暂时无法在其他引擎基础上实
 
 注意，切分文件时请确保文件内的同一句话内没有换行符，也即是说，一行内可以有多句完整的话，但请不要把一句话拆成多行。
 
-snownlp虽然可以修改词典，但是不会影响其行为，因为其无法使用用户自定义的词典。
+snownlp虽然可以修改词典，但是不会影响其行为，因为其有固定的词典，不使用自定义的词典。
 
 下载
 ========
@@ -84,6 +85,9 @@ def test():
     seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。"
+    
+    print("拼音")
+    print(HanSeg.pinyin(text))
 
     seg1.suggest_freq(('今天', '天气'))
 
@@ -131,13 +135,19 @@ def test():
     # 虽然可以让SnowNLP操作用户词典，但是这种行为不会影响SnowNLP的行为与结果。
 
     print("切分文件") # 自定义切分文件，不支持多进程切分
-    seg1.cut_file("user_data/input_file.txt", "user_data/output_file.txt", batch_size=100)
-    seg2.cut_file("user_data/input_file.txt", "user_data/output_file.txt", batch_size=100)
-    seg3.cut_file("user_data/input_file.txt", "user_data/output_file.txt", batch_size=100)
-    seg4.cut_file("user_data/input_file.txt", "user_data/output_file.txt", batch_size=100)
+    seg1.cut_file("user_data/input_file.txt", "user_data/output_file1.txt", batch_size=100)
+    seg2.cut_file("user_data/input_file.txt", "user_data/output_file2.txt", batch_size=100)
+    seg3.cut_file("user_data/input_file.txt", "user_data/output_file3.txt", batch_size=100)
+    seg4.cut_file("user_data/input_file.txt", "user_data/output_file4.txt", batch_size=100)
 
     print("多进程切分文件") # 无论使用什么引擎，都会使用pkuseg的类方法进行切分，使用pkuseg的配置
     seg1.cut_file_fast("user_data/input_file.txt", "user_data/output_file_fast.txt", workers=10)
+    
+    print("词频统计")
+    seg1.words_count("user_data/words_count_input.txt", "user_data/words_count_output1.txt")
+    seg2.words_count("user_data/words_count_input.txt", "user_data/words_count_output2.txt")
+    seg3.words_count("user_data/words_count_input.txt", "user_data/words_count_output3.txt")
+    seg4.words_count("user_data/words_count_input.txt", "user_data/words_count_output4.txt")
 
     # 如果代码中含有cut_file_fast，务必以
     # if __name__ == '__main__':

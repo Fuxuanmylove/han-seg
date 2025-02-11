@@ -1,4 +1,3 @@
-import logging
 from typing import List, Tuple, Union
 import jieba
 from jieba import posseg as pseg
@@ -54,18 +53,18 @@ class HanSegJieba(HanSegBase):
                 return [(word, left, right) for word, left, right in words if word not in self.stop_words]
             return [word for word in words if word not in self.stop_words]
         return list(words)
-        
+
     def pos(self, text: str) -> List[Tuple[str, str]]:
         if self.filt:
             return [(word, pos) for word, pos in pseg.cut(text, HMM=self.HMM) if word not in self.stop_words]
         return [(word, pos) for word, pos in pseg.lcut(text, HMM=self.HMM)]
-        
+
     def add_word(self, word: str, freq: int = 1, flag: str = None) -> None:
         jieba.add_word(word, freq, flag)
-        
+
     def del_word(self, word: str) -> None:
         jieba.del_word(word)
-        
+
     def suggest_freq(self, words) -> None:
         jieba.suggest_freq(words, tune=self.tune)
 
@@ -77,6 +76,3 @@ class HanSegJieba(HanSegBase):
 
     def sentiment_analysis(self, text: str) -> float:
         return super().sentiment_analysis(text)
-    
-    def _process_chunk(self, lines: List[str]) -> List[str]:
-        return [' '.join(self.cut(line)) + '\n' for line in lines]
