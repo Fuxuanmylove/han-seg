@@ -24,7 +24,6 @@ pip install jieba thulac pkuseg snownlp hanlp tensorflow
 from interface import HanSeg
 seg = HanSeg('jieba', user_dict="user_dict.txt")
 
-# 标准分词: cut 参数: texts: 待分词文本列表 with_position: 是否带位置信息
 print(seg.cut(["今天天气真好，适合出去散步。", "不要笑挑战么，有点意思。"]))
 print(seg.pos("今天天气真好"))
 print(seg.keywords("今天天气真好"))
