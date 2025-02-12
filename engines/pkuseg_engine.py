@@ -48,7 +48,7 @@ class HanSegPkuseg(HanSegBase):
 
         super().del_word(word)
     
-    def _reload_engine(self) -> None:
+    def reload_engine(self) -> None:
         self._pkuseg = pkuseg(
             model_name=self.model_name,
             user_dict=self.user_dict_path,

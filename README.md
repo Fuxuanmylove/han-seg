@@ -12,6 +12,27 @@ han-seg
 
 目前已大致完成jieba，thulac，pkuseg与snownlp的统一。
 
+安装依赖
+========
+```bash
+pip install jieba thulac pkuseg snownlp
+```
+
+快速入门
+========
+```python
+from interface import HanSeg
+seg = HanSeg('jieba', user_dict="user_dict.txt")
+print(seg.cut("今天天气真好"))
+print(seg.pos("今天天气真好"))
+print(seg.keywords("今天天气真好"))
+print(seg.sentiment_analysis("今天天气真好"))
+```
+
+* 用户词典与停用词文件格式说明：
+    * 用户词典示例：每行格式为 词语 词性（可忽略）（如哈基米 n）。
+    * 停用词文件示例：每行一个停用词，如的、了。
+
 主要功能
 ========
 * 如下：
@@ -28,30 +49,35 @@ han-seg
     * 繁体转简体 ✔️ 使用SnowNLP
     * 文本总结 ✔️ 使用SnowNLP
     * 文本相似度 ✔️ 使用SnowNLP
-    * 即时修改用户词典 ✔️ 需要注意，使用thulac和pkuseg时此操作可能会显著降低程序运行效率
-    * 滞后修改用户词典 ❌
+    * 修改用户词典 ✔️
     * 修改停止词字典 ❌
     * 按词性过滤输出 ❌
     * 文本分类 ❌
     * 词向量 ❌
     * hanlp特有功能 ❌
 
-## 功能支持表
+## 各引擎对比
 
-| 功能        | jieba | thulac  | pkuseg  | snownlp |
+|特性	|jieba	|thulac	|pkuseg	|snownlp|
 |-------------|-------|---------|---------|---------|
-| 标准分词     | ✔️    | ✔️     | ✔️     | ✔️      |
-| 分词（带位置）     | ✔️    | ✔️     | ✔️     | ✔️      |
-| 建议频率     | ✔️    | ❌     | ❌     | ❌      |
-| 词性标注     | ✔️    | ✔️     | ✔️     | ✔️      |
-| 关键词提取   | ✔️    | ✔️*    | ✔️*     | ✔️     |
-| 情感分析     | ✔️*   | ✔️*    | ✔️*    | ✔️      |
-| 切分文件     | ✔️    | ✔️     | ✔️     | ✔️      |
-| 按停止词过滤输出     | ✔️    | ✔️     | ✔️     | ✔️      |
-| 修改字典     | ✔️    | ✔️     | ✔️     | ✔️      |
-| 文件词频统计     | ✔️    | ✔️     | ✔️     | ✔️      |
+|核心优势|速度快、社区活跃、易用性强|高准确性|多领域支持、灵活性高|功能丰富|
+|分词速度|⚡⚡⚡⚡|⚡⚡⚡|⚡⚡⚡|⚡⚡⚡|
+|分词准确性|中等|高|非常高|中等|
+|词性标注|✔️ |✔️ |✔️ |✔️ |
+|自定义词典支持|✔️ (动态修改，即时生效)|✔️ (需重新初始化模型)|✔️ (需重新初始化模型)|❌ (固定词典，无法修改)|
+|多领域适应性|通用场景|通用场景|支持新闻、医学、旅游等预训练模型|通用场景
+|关键词提取|✔️ (TF-IDF/TextRank)|❌ (依赖其他引擎代理)|❌ (依赖其他引擎代理)|✔️ (TF-IDF)|
+|情感分析|❌ (需代理到snownlp)|❌ (需代理到snownlp)|❌ (需代理到snownlp)|✔️|
+|附加功能|关键词提取|无|快速文件切分（多进程）|拼音转换、文本摘要、繁体转简体等|
+|内存占用|低|高（需加载大型模型文件）|中等|中等|
+|适用场景|通用文本、实时处理|学术研究、高精度分词需求|专业领域、文本处理|情感分析、文本增强（非专业分词）|
 
-*代表需启用多引擎模式
+模型选择建议
+========
+* 追求速度与易用性  → jieba
+* 高精度学术研究    → thulac
+* 专业领域文本处理  → pkuseg
+* 情感分析/文本增强 → snownlp
 
 jieba引擎独有的suggest_freq功能，暂时无法在其他引擎基础上实现。
 
@@ -71,140 +97,15 @@ snownlp虽然可以修改词典，但是不会影响其行为，因为其有固�
 
 示例
 ========
-```python
-from interface import HanSeg
-
-USER_DICT = "user_data/user_dict.txt"
-STOP_WORDS_PATH = "user_data/stop_words.txt" # If you set filt=False, you don't need to specify a stop words path.
-CONFIG_PATH = "config.yaml"
-
-def test():
-    # 初始化thulac引擎
-    seg1 = HanSeg('jieba', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    seg2 = HanSeg('thulac', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。中国有句古话，识时务者为俊杰。"
-    text2 = "不要笑挑战么，有点意思。哈基米哈基米哈基米，哈基米摸那咩路多。"
-    tradition = "「繁體字」「繁體中文」的叫法在臺灣亦很常見。"
-
-    print("拼音") # 基于SnowNLP的实现
-    print(HanSeg.pinyin(text))
-
-    print("繁体转简体") # 基于SnowNLP的实现
-    print(HanSeg.t2s(tradition))
-    
-    print("相似度") # 基于SnowNLP的实现
-    print(HanSeg.similarity(text, text2))
-    
-    print("摘要") # 基于SnowNLP的实现
-    print(HanSeg.summary(text, limit=2))
-
-    seg1.suggest_freq(('今天', '天气'))
-
-    print("增加单词")
-    # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
-    seg1.add_word("哈基米", freq=100, flag='n')
-    # 下面三个引擎中，传入freq将会被忽略。
-    seg2.add_word("哈基米", flag='n')
-    seg3.add_word("哈基米", flag='n')
-    seg4.add_word("哈基米", flag='n')
-    # 虽然可以让SnowNLP操作用户词典，但是这种行为不会影响SnowNLP的行为与结果。
-
-    print("分词")
-    print(seg1.cut(text))
-    print(seg2.cut(text))
-    print(seg3.cut(text))
-    print(seg4.cut(text))
-    
-    print(seg1.cut(text, with_position=True))
-    print(seg2.cut(text, with_position=True))
-    print(seg3.cut(text, with_position=True))
-    print(seg4.cut(text, with_position=True))
-
-    print("词性标注")
-    print(seg1.pos(text))
-    print(seg2.pos(text))
-    print(seg3.pos(text))
-    print(seg4.pos(text))
-
-    print("关键词提取")
-    print(seg1.keywords(text, limit=2))
-    print(seg2.keywords(text, limit=2))
-    print(seg3.keywords(text, limit=2))
-    print(seg4.keywords(text, limit=2))
-
-    print("情感分析")
-    print(seg1.sentiment_analysis(text))
-    print(seg2.sentiment_analysis(text))
-    print(seg3.sentiment_analysis(text))
-    print(seg4.sentiment_analysis(text))
-
-    print("删除单词")
-    # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。
-    seg1.del_word("哈基米")
-    seg2.del_word("哈基米")
-    seg3.del_word("哈基米")
-    seg4.del_word("哈基米")
-
-    print("切分文件") # 自定义切分文件，不支持多进程切分
-    seg1.cut_file("user_data/input_file.txt", "user_data/output_file1.txt", batch_size=100)
-    seg2.cut_file("user_data/input_file.txt", "user_data/output_file2.txt", batch_size=100)
-    seg3.cut_file("user_data/input_file.txt", "user_data/output_file3.txt", batch_size=100)
-    seg4.cut_file("user_data/input_file.txt", "user_data/output_file4.txt", batch_size=100)
-
-    print("多进程切分文件") # 无论使用什么引擎，都会使用pkuseg的类方法进行切分。
-    seg1.cut_file_fast("user_data/input_file.txt", "user_data/output_file_fast.txt", workers=10,
-                       model_name='web', postag=False) # 未传入的参数将使用config中pkuseg的默认配置
-    
-    # 如果代码中含有cut_file_fast，务必以
-    # if __name__ == '__main__':
-    #     Your_Function()
-    # 的形式运行脚本，否则会有意料不到的后果。
-    # 这是由于此方法设计了多进程操作。
-
-    print("词频统计")
-    seg1.words_count("user_data/words_count_input.txt", "user_data/words_count_output1.txt")
-    seg2.words_count("user_data/words_count_input.txt", "user_data/words_count_output2.txt")
-    seg3.words_count("user_data/words_count_input.txt", "user_data/words_count_output3.txt")
-    seg4.words_count("user_data/words_count_input.txt", "user_data/words_count_output4.txt")
-
-if __name__ == '__main__':
-    test()
-```
+[示例运行脚本](https://github.com/Fuxuanmylove/han-seg/blob/main/example.py)
 
 使用配置文件来控制引擎的工作方式
-* config.yaml
-```yaml
-jieba:
-  HMM: false
-  tune: true
-  withWeight: false
-  allowPOS: "ns n vn v" # seperated by space
-  dictionary: "" # empty string if not needed
-  idf_path: ""
-  keywords_method: "textrank" # textrank or tfidf
-  cut_mode: "default" # default / full / search
+[示例配置文件](https://github.com/Fuxuanmylove/han-seg/blob/main/config.yaml)
 
-thulac:
-  model_path: ""
-  postag: true
-  keywords_method: "textrank" # textrank or tfidf
-  idf_path: ""
-  withWeight: false
-  allowPOS: "ns n vn v" # seperated by space
-
-pkuseg:
-  model_name: "web" # news web medicine tourism default
-  postag: true
-  keywords_method: "textrank" # textrank or tfidf
-  idf_path: ""
-  withWeight: false
-  allowPOS: "ns n vn v" # seperated by space
-  verbose: false
-
-snownlp:
-
-```
+FAQ
+========
+* Q：为什么thulac和pkuseg修改用户词典之后没有立即生效？A：需要调用他们的reload_engine()方法来重载用户词典。
+* Q：使用cut_file_fast方法时程序停不下来？A：确保主程序包裹在if __name__ == '__main__':中。
+* Q：使用cut_file_fast方法怎么反而速度更慢了？A：Windows平台上创建多进程开销很大。因此在文件规模并非极其大时，建议使用普通的cut_file方法。
 
 本项目旨在尽量统一各个库的接口并统一输出形式便于用户使用。如有建议请务必提出！

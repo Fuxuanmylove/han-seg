@@ -42,7 +42,7 @@ class HanSegThulac(HanSegBase):
     def del_word(self, word: str) -> None:
         super().del_word(word)
   
-    def _reload_engine(self) -> None:
+    def reload_engine(self) -> None:
         self._thulac = thulac(
             model_path=self.model_path,
             seg_only=(not self.postag),

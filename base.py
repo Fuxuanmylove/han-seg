@@ -63,7 +63,6 @@ class HanSegBase:
             line = f"{word} {flag}" if flag else word
             with open(self.user_dict_path, 'a', encoding='utf-8') as f:
                 f.write(f"\n{line}\n")
-                self._reload_engine()
 
     def del_word(self, word: str) -> None:
         if not self.user_dict_path:
@@ -73,11 +72,9 @@ class HanSegBase:
             for line in f:
                 lst = line.split()
                 if lst and lst[0] != word:
-                    lines.append(line)
-                    
+                    lines.append(line)       
         with open(self.user_dict_path, 'w', encoding='utf-8') as f:
             f.writelines(lines)
-        self._reload_engine()
 
     def suggest_freq(self, words) -> None:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
@@ -98,7 +95,7 @@ class HanSegBase:
             processed_text = ' '.join(self.cut(text))
             return SnowNLP(processed_text).sentiments
         raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method.")
-    
+
     def cut_file(self, input_path: str, output_path: str, batch_size: int = 1000) -> None:
         with open(input_path, 'r', encoding='utf-8') as f_in, \
             open(output_path, 'w', encoding='utf-8') as f_out:
@@ -113,7 +110,6 @@ class HanSegBase:
             if batch:
                 f_out.writelines(' '.join(self.cut(line)) + '\n' for line in batch)
 
-            
     def words_count(self, input_file: str, output_file: str) -> None:
         word_counts = Counter()
         
@@ -131,9 +127,9 @@ class HanSegBase:
             for word, count in word_counts.most_common():
                 f.write(f"{word} {count}\n")
 
-    def _reload_engine(self) -> None:
-        raise NotImplementedError
-    
+    def reload_engine(self) -> None:
+        pass
+
     def _clean_file(self, file_path: str) -> None:
         with open(file_path, 'r', encoding='utf-8') as f:
             lines = {line.strip() for line in f if line.strip()}
@@ -141,21 +137,21 @@ class HanSegBase:
         with open(file_path, 'w', encoding='utf-8') as f:
             for line in lines:
                 f.write(line + '\n')
-                
+
     @staticmethod
     def _check_and_get_stop_words(stop_words_path: str) -> Set[str]:
         """Check if the stop words file exists, and return the set of stop words."""
         with open(stop_words_path, 'r', encoding='utf-8') as f:
             stop_words = {line.strip() for line in f if line.strip()}
         return stop_words
-    
+
     @staticmethod
     def _load_config(config_path: str) -> dict:
         """Load config from yaml file."""
         with open(config_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
         return config
-    
+
     @staticmethod
     def _add_position(words: List[str]) -> List[Tuple[str, int, int]]:
         """Add position information to each word. Please use it before filtering stop words."""
