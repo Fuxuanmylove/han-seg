@@ -74,4 +74,6 @@ class HanSegJieba(HanSegBase):
             return analyse.textrank(text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
 
     def sentiment_analysis(self, text: str) -> float:
+        if self.cut_mode != 'default':
+            raise HanSegError("Sentiment analysis is only supported when cut_mode is 'default' if you use jieba.")
         return super().sentiment_analysis(text)

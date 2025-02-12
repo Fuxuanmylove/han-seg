@@ -9,13 +9,11 @@ jieba:
   dictionary: "" # empty string if not needed
   idf_path: ""
   keywords_method: "textrank" # textrank or tfidf
-  cut_mode: "full" # default / full / search
+  cut_mode: "default" # default / full / search
 
 thulac:
   model_path: ""
-  t2s: false
   postag: true
-  max_length: 50000
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
   withWeight: false

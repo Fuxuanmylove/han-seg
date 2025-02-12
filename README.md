@@ -87,7 +87,7 @@ def test():
     text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。中国有句古话，识时务者为俊杰。"
     text2 = "不要笑挑战么，有点意思。"
     tradition = "「繁體字」「繁體中文」的叫法在臺灣亦很常見。"
-    
+
     print("拼音") # 基于SnowNLP的实现
     print(HanSeg.pinyin(text))
     
@@ -186,9 +186,7 @@ jieba:
 
 thulac:
   model_path: ""
-  t2s: false
-  seg_only: false
-  max_length: 50000
+  postag: true
   keywords_method: "textrank" # textrank or tfidf
   idf_path: ""
   withWeight: false

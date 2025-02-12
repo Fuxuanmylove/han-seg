@@ -13,8 +13,7 @@ class HanSegThulac(HanSegBase):
         if not self.model_path:
             self.model_path = None
         self.postag = self.local_config.get('postag', True)
-        self.t2s = self.local_config.get('t2s', False)
-        self._thulac = thulac(model_path=self.model_path, seg_only=(not self.postag), T2S=self.t2s, user_dict=self.user_dict_path)
+        self._thulac = thulac(model_path=self.model_path, seg_only=(not self.postag), user_dict=self.user_dict_path)
             
     def cut(self, text: str, with_position: bool = False) -> List[str]:
         words = [word[0] for word in self._thulac.cut(text)]
@@ -53,6 +52,5 @@ class HanSegThulac(HanSegBase):
         self._thulac = thulac(
             model_path=self.model_path,
             seg_only=(not self.postag),
-            T2S=self.t2s,
             user_dict=self.user_dict_path
         )
