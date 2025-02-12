@@ -20,7 +20,7 @@ thulac:
   idf_path: ""
 
 pkuseg:
-  model_name: "web"           # pkuseg使用的模型名称 default / web / tourism / medicine
+  model_name: "web"           # pkuseg使用的模型名称 default / web / tourism / medicine / news
   postag: true
   withWeight: false
   allowPOS: "ns n vn v"
@@ -31,4 +31,7 @@ snownlp:
 
 hanlp:
   tok_mode: "coarse"          # 分词模式 fine / coarse
+  withWeight: false
+  allowPOS: "ns n vn v"
   keywords_method: "textrank"
+  idf_path: ""

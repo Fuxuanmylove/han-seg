@@ -25,19 +25,17 @@ class HanSegPkuseg(HanSegBase):
         if self.filt:
             return [(word[0], word[1]) for word in self._pkuseg.cut(text) if word[0] not in self.stop_words]
         return self._pkuseg.cut(text)
-    
+
     def add_word(self, word: str, freq: int = 1, flag: str = None) -> None:
         if self.user_dict_path == 'default':
             raise HanSegError("You cannot modify the default user_dict.")
-
         super().add_word(word, freq, flag)
 
     def del_word(self, word: str) -> None:
         if self.user_dict_path == 'default':
             raise HanSegError("You cannot modify the default user_dict.")
-
         super().del_word(word)
-    
+
     def reload_engine(self) -> None:
         super().reload_engine()
         self._pkuseg = pkuseg(

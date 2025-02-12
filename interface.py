@@ -8,6 +8,8 @@ from engines.pkuseg_engine import HanSegPkuseg
 from engines.snownlp_engine import HanSegSnowNLP
 from engines.hanlp_engine import HanSegHanLP
 from snownlp import SnowNLP
+import hanlp
+from hanlp.pretrained.sts import STS_ELECTRA_BASE_ZH
 
 ENGINE_MAP: Dict[str, HanSegBase] = {
     'jieba': HanSegJieba,
@@ -55,9 +57,9 @@ class HanSeg:
         """Returns the tokens and their corresponding POS tags."""
         return self._engine.pos(text)
 
-    def add_word(self, word: str, freq: int = 1, flag: str = None):
+    def add_word(self, word: str, freq: int = 1, tag: str = None):
         """Dynamically add words or add words to user_dict, if supported by the engine."""
-        self._engine.add_word(word, freq, flag)
+        self._engine.add_word(word, freq, tag)
 
     def del_word(self, word: str):
         """Dynamically delete words or delete words from user_dict, if supported by the engine."""
@@ -85,7 +87,16 @@ class HanSeg:
         """
         self._engine.cut_file(input_path, output_path, batch_size)
 
-    def cut_file_fast(self, input_path: str, output_path: str, workers: int = 10, model_name: str = None, user_dict: str = None, postag: bool = None) -> None:
+    def words_count(self, input_file: str, output_file: str) -> None:
+        """Count the words in a file, and save the result to output_file."""
+        self._engine.words_count(input_file, output_file)
+        
+    def reload_engine(self) -> None:
+        """Reload the engine."""
+        self._engine.reload_engine()
+
+    @staticmethod
+    def cut_file_fast(input_path: str, output_path: str, workers: int = 10, model_name: str = 'web', user_dict: str = 'default', postag: bool = False) -> None:
         """
         Fast cut, using pkuseg.
 
@@ -94,26 +105,20 @@ class HanSeg:
         :param workers: number of multiprocessing workers
         """
         import pkuseg
-        pkuseg_config = self.config.get('pkuseg', {})
-        _model_name = model_name if model_name is not None else pkuseg_config.get('model_name', 'web')
-        _user_dict = user_dict if user_dict is not None else pkuseg_config.get('user_dict', 'default')
-        _postag = postag if postag is not None else pkuseg_config.get('postag', False)
         pkuseg.test(
             input_path,
             output_path,
-            model_name=_model_name,
-            user_dict=_user_dict,
+            model_name=model_name,
+            user_dict=user_dict,
             nthread=workers,
-            postag=_postag,
+            postag=postag,
         )
 
-    def words_count(self, input_file: str, output_file: str) -> None:
-        """Count the words in a file, and save the result to output_file."""
-        self._engine.words_count(input_file, output_file)
-        
-    def reload_engine(self) -> None:
-        """Reload the engine."""
-        self._engine.reload_engine()
+    @staticmethod
+    def similarity(text_pair: List[Tuple[str, str]]) -> List[float]:
+        """Return the similarity of text tuples."""
+        _sim = hanlp.load(STS_ELECTRA_BASE_ZH)
+        return _sim(text_pair)
 
     @staticmethod
     def pinyin(text: str) -> List[str]:
@@ -124,11 +129,6 @@ class HanSeg:
     def t2s(text: str) -> str:
         """Convert traditional Chinese to simplified Chinese."""
         return SnowNLP(text).han
-
-    @staticmethod
-    def similarity(text1: str, text2: str) -> List[float]:
-        """Return the similarity between two texts."""
-        return SnowNLP(text1).sim(text2)
 
     @staticmethod
     def summary(text: str, limit: int = 5) -> List[str]:

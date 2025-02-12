@@ -27,8 +27,11 @@ class HanSegSnowNLP(HanSegBase):
             return [word for word in SnowNLP(text).keywords(limit) if word not in self.stop_words]
         return SnowNLP(text).keywords(limit)
 
-    def sentiment_analysis(self, text: str) -> float:
-        return SnowNLP(text).sentiments
+    def sentiment_analysis(self, text: str) -> str:
+        score = SnowNLP(text).sentiments
+        if score >= 0.5:
+            return f"{score:.5f} (Positive)"
+        return f"{(1 - score):.5f} (Negative)"
 
     def reload_engine(self):
         pass

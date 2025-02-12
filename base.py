@@ -7,6 +7,8 @@ import os
 import yaml
 import logging
 from snownlp import SnowNLP
+import hanlp
+from hanlp.pretrained.sts import STS_ELECTRA_BASE_ZH
 
 
 class HanSegBase:
@@ -50,13 +52,13 @@ class HanSegBase:
     def pos(self, text: str) -> List[Tuple[str, str]]:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
-    def add_word(self, word: str, freq: int = 1, flag: str = None) -> None:
+    def add_word(self, word: str, freq: int = 1, tag: str = None) -> None:
         if not self.user_dict_path:
             raise HanSegError("User dict is not set.")
         word = word.strip()
-        flag = flag.strip() if flag else None
+        tag = tag.strip() if tag else None
         if word:
-            line = f"{word} {flag}" if flag else word
+            line = f"{word} {tag}" if tag else word
             with open(self.user_dict_path, 'a', encoding='utf-8') as f:
                 f.write(f"\n{line}\n")
 
@@ -79,6 +81,7 @@ class HanSegBase:
         if self.multi_engines:
             logging.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
             processed_text = ' '.join(self.cut([text])[0])
+            print(processed_text)
             if self.keywords_method == 'tfidf':
                 return analyse.extract_tags(processed_text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
             elif self.keywords_method == 'textrank':
@@ -89,7 +92,10 @@ class HanSegBase:
         if self.multi_engines:
             logging.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
             processed_text = ' '.join(self.cut([text])[0])
-            return SnowNLP(processed_text).sentiments
+            score = SnowNLP(processed_text).sentiments
+            if score >= 0.5:
+                return f"{score:.5f} (Positive)"
+            return f"{(1 - score):.5f} (Negative)"
         raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method.")
 
     def cut_file(self, input_path: str, output_path: str, batch_size: int = 1000) -> None:

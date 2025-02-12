@@ -61,11 +61,13 @@ class HanSegJieba(HanSegBase):
             return [(word, pos) for word, pos in pseg.cut(text, HMM=self.HMM) if word not in self.stop_words]
         return [(word, pos) for word, pos in pseg.lcut(text, HMM=self.HMM)]
 
-    def add_word(self, word: str, freq: int = 1, flag: str = None) -> None:
-        jieba.add_word(word, freq, flag)
+    def add_word(self, word: str, freq: int = 1, tag: str = None) -> None:
+        jieba.add_word(word, freq, tag)
+        super().add_word(word, freq, tag)
 
     def del_word(self, word: str) -> None:
         jieba.del_word(word)
+        super().del_word(word)
 
     def suggest_freq(self, words) -> None:
         jieba.suggest_freq(words, tune=self.tune)

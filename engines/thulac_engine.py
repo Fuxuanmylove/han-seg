@@ -25,12 +25,6 @@ class HanSegThulac(HanSegBase):
         if self.filt:
             return [(word, pos) for word, pos in self._thulac.cut(text) if word not in self.stop_words]            
         return [(word, pos) for word, pos in self._thulac.cut(text)]
-    
-    def add_word(self, word: str, freq: int = 1, flag: str = None) -> None:
-        super().add_word(word, freq, flag)
-        
-    def del_word(self, word: str) -> None:
-        super().del_word(word)
   
     def reload_engine(self) -> None:
         super().reload_engine()
