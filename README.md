@@ -15,7 +15,7 @@ han-seg
 安装依赖
 ========
 ```bash
-pip install jieba thulac pkuseg snownlp # hanlp tensorflow
+pip install jieba thulac pkuseg snownlp hanlp tensorflow
 ```
 
 快速入门
@@ -50,7 +50,6 @@ print(seg.sentiment_analysis("今天天气真好"))
 * 文本相似度 ✔️ 使用SnowNLP
 * 修改用户词典 ✔️
 * 修改停止词字典 ❌
-* 按词性过滤输出 ❌
 * 文本分类 ❌
 * 词向量 ❌
 * hanlp特有功能 ❌

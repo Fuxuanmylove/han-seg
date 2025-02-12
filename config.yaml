@@ -28,3 +28,7 @@ pkuseg:
   idf_path: ""
 
 snownlp:
+
+hanlp:
+  tok_mode: "coarse"          # 分词模式 fine / coarse
+  keywords_method: "textrank"

@@ -6,6 +6,7 @@ from engines.jieba_engine import HanSegJieba
 from engines.thulac_engine import HanSegThulac
 from engines.pkuseg_engine import HanSegPkuseg
 from engines.snownlp_engine import HanSegSnowNLP
+from engines.hanlp_engine import HanSegHanLP
 from snownlp import SnowNLP
 
 ENGINE_MAP: Dict[str, HanSegBase] = {
@@ -13,14 +14,18 @@ ENGINE_MAP: Dict[str, HanSegBase] = {
     'thulac': HanSegThulac,
     'pkuseg': HanSegPkuseg,
     'snownlp': HanSegSnowNLP,
+    'hanlp': HanSegHanLP,
 }
 
 class HanSeg:
 
     def __init__(self, engine_name: str = 'jieba', multi_engines: bool = True, user_dict: str = None, filt: bool = False, stop_words_path: str = None, config_path: str = "config.yaml"):
         """
-        :param engine: jieba / thulac / pkuseg / snownlp
+        :param engine_name: jieba / thulac / pkuseg / snownlp / hanlp
+        :param multi_engines: whether to use multiple engines
+        :param user_dict: path to user dictionary
         :param filt: whether to filter out stopwords
+        :param stop_words_path: path to stop words file
         :param config_path: path to config file
         """
         self.engine_name = engine_name.lower()
