@@ -80,7 +80,7 @@ class HanSeg:
         """
         self._engine.cut_file(input_path, output_path, batch_size)
 
-    def cut_file_fast(self, input_path: str, output_path: str, workers: int = 10) -> None:
+    def cut_file_fast(self, input_path: str, output_path: str, workers: int = 10, model_name: str = None, user_dict: str = None, postag: bool = None, verbose: bool = None) -> None:
         """
         Fast cut, using pkuseg.
 
@@ -90,18 +90,18 @@ class HanSeg:
         """
         import pkuseg
         pkuseg_config = self.config.get('pkuseg', {})
-        model_name = pkuseg_config.get('model_name', 'default')
-        user_dict = pkuseg_config.get('user_dict', 'default')
-        postag = pkuseg_config.get('postag', False)
-        verbose = pkuseg_config.get('verbose', False)
+        _model_name = model_name if model_name is not None else pkuseg_config.get('model_name', 'web')
+        _user_dict = user_dict if user_dict is not None else pkuseg_config.get('user_dict', 'default')
+        _postag = postag if postag is not None else pkuseg_config.get('postag', False)
+        _verbose = verbose if verbose is not None else pkuseg_config.get('verbose', False)
         pkuseg.test(
             input_path,
             output_path,
-            model_name=model_name,
-            user_dict=user_dict,
+            model_name=_model_name,
+            user_dict=_user_dict,
             nthread=workers,
-            postag=postag,
-            verbose=verbose,
+            postag=_postag,
+            verbose=_verbose,
         )
 
     def words_count(self, input_file: str, output_file: str) -> None:

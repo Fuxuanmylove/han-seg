@@ -1,9 +1,6 @@
-import logging
 from typing import List, Tuple, Union
 from base import HanSegBase, HanSegError
-from jieba import analyse
 from pkuseg import pkuseg
-from snownlp import SnowNLP
 
 
 class HanSegPkuseg(HanSegBase):

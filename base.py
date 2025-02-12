@@ -99,22 +99,20 @@ class HanSegBase:
             return SnowNLP(processed_text).sentiments
         raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method.")
     
-    def cut_file(self, input_path: str, output_path: str, batch_size) -> None:
+    def cut_file(self, input_path: str, output_path: str, batch_size: int = 1000) -> None:
         with open(input_path, 'r', encoding='utf-8') as f_in, \
             open(output_path, 'w', encoding='utf-8') as f_out:
             batch = []
-            processed_lines = []
-
             for line in f_in:
-                line = line.strip()
-                if line:
-                    batch.append(line)
-                    if len(batch) >= batch_size:
-                        processed_lines.extend([' '.join(self.cut(l)) + '\n' for l in batch])
+                stripped_line = line.strip()
+                if stripped_line:
+                    batch.append(stripped_line)
+                    if len(batch) == batch_size:
+                        f_out.writelines(' '.join(self.cut(line)) + '\n' for line in batch)
                         batch = []
             if batch:
-                processed_lines.extend([' '.join(self.cut(l)) + '\n' for l in batch])
-            f_out.writelines(processed_lines)
+                f_out.writelines(' '.join(self.cut(line)) + '\n' for line in batch)
+
             
     def words_count(self, input_file: str, output_file: str) -> None:
         word_counts = Counter()
@@ -125,7 +123,7 @@ class HanSegBase:
                 if line:
                     words = self.cut(line)
                     if self.filt:
-                        word_counts.update([word for word in words if word not in self.stop_words])
+                        word_counts.update(word for word in words if word not in self.stop_words)
                     else:
                         word_counts.update(words)
     

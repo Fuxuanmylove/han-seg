@@ -1,9 +1,6 @@
-import logging
 from typing import List, Tuple, Union
 from base import HanSegBase, HanSegError
-from jieba import analyse
 from thulac import thulac
-from snownlp import SnowNLP
 
 
 class HanSegThulac(HanSegBase):
@@ -15,9 +12,9 @@ class HanSegThulac(HanSegBase):
         self.model_path = self.local_config.get('model_path', None)
         if not self.model_path:
             self.model_path = None
-        self.seg_only = self.local_config.get('seg_only', False)
+        self.postag = self.local_config.get('postag', True)
         self.t2s = self.local_config.get('t2s', False)
-        self._thulac = thulac(model_path=self.model_path, seg_only=self.seg_only, T2S=self.t2s, user_dict=self.user_dict_path)
+        self._thulac = thulac(model_path=self.model_path, seg_only=(not self.postag), T2S=self.t2s, user_dict=self.user_dict_path)
             
     def cut(self, text: str, with_position: bool = False) -> List[str]:
         words = [word[0] for word in self._thulac.cut(text)]
@@ -34,8 +31,8 @@ class HanSegThulac(HanSegBase):
         return words
     
     def pos(self, text: str) -> List[Tuple[str, str]]:
-        if self.seg_only:
-            raise HanSegError("seg_only is true in config.")
+        if not self.postag:
+            raise HanSegError("postag is flase in config.")
         if self.filt:
             return [(word, pos) for word, pos in self._thulac.cut(text) if word not in self.stop_words]            
         return [(word, pos) for word, pos in self._thulac.cut(text)]
@@ -55,7 +52,7 @@ class HanSegThulac(HanSegBase):
     def _reload_engine(self) -> None:
         self._thulac = thulac(
             model_path=self.model_path,
-            seg_only=self.seg_only,
+            seg_only=(not self.postag),
             T2S=self.t2s,
             user_dict=self.user_dict_path
         )

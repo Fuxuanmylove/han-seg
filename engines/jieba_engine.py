@@ -3,7 +3,6 @@ import jieba
 from jieba import posseg as pseg
 from jieba import analyse
 from base import HanSegBase, HanSegError
-from snownlp import SnowNLP
 
 
 class HanSegJieba(HanSegBase):

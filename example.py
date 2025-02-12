@@ -82,20 +82,21 @@ def test():
     seg3.cut_file("user_data/input_file.txt", "user_data/output_file3.txt", batch_size=100)
     seg4.cut_file("user_data/input_file.txt", "user_data/output_file4.txt", batch_size=100)
 
-    print("多进程切分文件") # 无论使用什么引擎，都会使用pkuseg的类方法进行切分，使用pkuseg的配置
-    seg1.cut_file_fast("user_data/input_file.txt", "user_data/output_file_fast.txt", workers=10)
+    print("多进程切分文件") # 无论使用什么引擎，都会使用pkuseg的类方法进行切分。
+    seg1.cut_file_fast("user_data/input_file.txt", "user_data/output_file_fast.txt", workers=10,
+                       model_name='web', postag=False) # 未传入的参数将使用config中pkuseg的默认配置
     
-    print("词频统计")
-    seg1.words_count("user_data/words_count_input.txt", "user_data/words_count_output1.txt")
-    seg2.words_count("user_data/words_count_input.txt", "user_data/words_count_output2.txt")
-    seg3.words_count("user_data/words_count_input.txt", "user_data/words_count_output3.txt")
-    seg4.words_count("user_data/words_count_input.txt", "user_data/words_count_output4.txt")
-
     # 如果代码中含有cut_file_fast，务必以
     # if __name__ == '__main__':
     #     Your_Function()
     # 的形式运行脚本，否则会有意料不到的后果。
     # 这是由于此方法设计了多进程操作。
+
+    print("词频统计")
+    seg1.words_count("user_data/words_count_input.txt", "user_data/words_count_output1.txt")
+    seg2.words_count("user_data/words_count_input.txt", "user_data/words_count_output2.txt")
+    seg3.words_count("user_data/words_count_input.txt", "user_data/words_count_output3.txt")
+    seg4.words_count("user_data/words_count_input.txt", "user_data/words_count_output4.txt")
 
 if __name__ == '__main__':
     test()
