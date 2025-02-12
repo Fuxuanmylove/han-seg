@@ -18,11 +18,7 @@ class HanSegBase:
         self.filt = filt
         self.user_dict_path = user_dict
 
-        if not (self.engine_name == 'pkuseg' and self.user_dict_path == 'default'):
-            if self.user_dict_path is not None:
-                if not os.path.exists(self.user_dict_path):
-                    raise HanSegError(f"User dictionary file {self.user_dict_path} not found.")
-                self._clean_file(self.user_dict_path)
+        self._initialize_user_dict()
 
         self.stop_words = set()
         if self.filt:
@@ -48,7 +44,7 @@ class HanSegBase:
             if self.keywords_method == 'tfidf' and self.idf_path and (self.multi_engines or self.engine_name == 'jieba'):
                 analyse.set_idf_path(self.idf_path)
 
-    def cut(self, text: str, with_position: bool) -> List[str]:
+    def cut(self, texts: List[str], with_position: bool = False) -> Union[List[List[str]], List[List[Tuple[str, int, int]]]]:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
     def pos(self, text: str) -> List[Tuple[str, str]]:
@@ -82,7 +78,7 @@ class HanSegBase:
     def keywords(self, text: str, limit: int = 10) -> Union[List[str], List[Tuple[str, float]]]:
         if self.multi_engines:
             logging.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
-            processed_text = ' '.join(self.cut(text))
+            processed_text = ' '.join(self.cut([text])[0])
             if self.keywords_method == 'tfidf':
                 return analyse.extract_tags(processed_text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
             elif self.keywords_method == 'textrank':
@@ -92,7 +88,7 @@ class HanSegBase:
     def sentiment_analysis(self, text: str) -> float:
         if self.multi_engines:
             logging.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
-            processed_text = ' '.join(self.cut(text))
+            processed_text = ' '.join(self.cut([text])[0])
             return SnowNLP(processed_text).sentiments
         raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method.")
 
@@ -105,38 +101,59 @@ class HanSegBase:
                 if stripped_line:
                     batch.append(stripped_line)
                     if len(batch) == batch_size:
-                        f_out.writelines(' '.join(self.cut(line)) + '\n' for line in batch)
+                        raw_result = self.cut(batch)
+                        lines = "\n".join(" ".join(words) for words in raw_result)
+                        f_out.writelines(lines)
                         batch = []
             if batch:
-                f_out.writelines(' '.join(self.cut(line)) + '\n' for line in batch)
+                raw_result = self.cut(batch)
+                lines = "\n".join(" ".join(words) for words in raw_result)
+                f_out.writelines(lines)
 
     def words_count(self, input_file: str, output_file: str) -> None:
         word_counts = Counter()
-        
         with open(input_file, 'r', encoding='utf-8') as f:
             for line in f:
                 line = line.strip()
                 if line:
-                    words = self.cut(line)
-                    if self.filt:
-                        word_counts.update(word for word in words if word not in self.stop_words)
-                    else:
-                        word_counts.update(words)
-    
+                    words = self.cut([line])[0]
+                    word_counts.update(words)
         with open(output_file, 'w', encoding='utf-8') as f:
             for word, count in word_counts.most_common():
                 f.write(f"{word} {count}\n")
 
     def reload_engine(self) -> None:
-        pass
+        self._initialize_user_dict()
 
     def _clean_file(self, file_path: str) -> None:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            lines = {line.strip() for line in f if line.strip()}
+        with open(file_path, 'r+', encoding='utf-8') as f:
+            seen = set()
+            kept_lines = []
+            for line in f:
+                word = line.strip()
+                if word and word not in seen:
+                    seen.add(word)
+                    kept_lines.append(word + '\n')
+            f.seek(0)
+            f.writelines(kept_lines)
+            f.truncate()
 
-        with open(file_path, 'w', encoding='utf-8') as f:
-            for line in lines:
-                f.write(line + '\n')
+    def _deal_with_raw_cut_result(self, result: List[List[str]], with_position: bool = False) -> Union[List[List[str]], List[List[Tuple[str, int, int]]]]:    
+        if with_position:
+            result = [HanSegBase._add_position(words) for words in result]
+        if self.filt:
+            if with_position:            
+                result = [[(word, start, end) for word, start, end in words if word not in self.stop_words] for words in result]
+            else:
+                result = [[word for word in words if word not in self.stop_words] for words in result]
+        return result
+
+    def _initialize_user_dict(self) -> None:
+        if not (self.engine_name == 'pkuseg' and self.user_dict_path == 'default'):
+            if self.user_dict_path is not None:
+                if not os.path.exists(self.user_dict_path):
+                    raise HanSegError(f"User dictionary file {self.user_dict_path} not found.")
+                self._clean_file(self.user_dict_path)
 
     @staticmethod
     def _check_and_get_stop_words(stop_words_path: str) -> Set[str]:

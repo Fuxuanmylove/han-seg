@@ -15,7 +15,7 @@ han-seg
 安装依赖
 ========
 ```bash
-pip install jieba thulac pkuseg snownlp
+pip install jieba thulac pkuseg snownlp # hanlp tensorflow
 ```
 
 快速入门
@@ -23,7 +23,7 @@ pip install jieba thulac pkuseg snownlp
 ```python
 from interface import HanSeg
 seg = HanSeg('jieba', user_dict="user_dict.txt")
-print(seg.cut("今天天气真好"))
+print(seg.cut(["今天天气真好，适合出去散步。", "不要笑挑战么，有点意思。"]))
 print(seg.pos("今天天气真好"))
 print(seg.keywords("今天天气真好"))
 print(seg.sentiment_analysis("今天天气真好"))
@@ -35,26 +35,25 @@ print(seg.sentiment_analysis("今天天气真好"))
 
 主要功能
 ========
-* 如下：
-    * 标准分词 ✔️
-    * 带位置信息的分词 ✔️
-    * 词性标注 ✔️
-    * 关键词提取 ✔️
-    * 情感分析 ✔️ 各引擎统一使用snownlp的情感分析接口
-    * 按用户配置对文件进行分词（不支持多进程） ✔️
-    * 快速切分文件 ✔️ 各引擎接口一致使用pkuseg快速切分文件接口，支持多进程
-    * 按停止词过滤输出 ✔️
-    * 拼音转换 ✔️
-    * 文件词频统计 ✔️
-    * 繁体转简体 ✔️ 使用SnowNLP
-    * 文本总结 ✔️ 使用SnowNLP
-    * 文本相似度 ✔️ 使用SnowNLP
-    * 修改用户词典 ✔️
-    * 修改停止词字典 ❌
-    * 按词性过滤输出 ❌
-    * 文本分类 ❌
-    * 词向量 ❌
-    * hanlp特有功能 ❌
+* 标准分词 ✔️
+* 带位置信息的分词 ✔️
+* 词性标注 ✔️
+* 关键词提取 ✔️
+* 情感分析 ✔️ 各引擎统一使用snownlp的情感分析接口
+* 按用户配置对文件进行分词（不支持多进程） ✔️
+* 快速切分文件 ✔️ 各引擎接口一致使用pkuseg快速切分文件接口，支持多进程
+* 按停止词过滤输出 ✔️
+* 拼音转换 ✔️
+* 文件词频统计 ✔️
+* 繁体转简体 ✔️ 使用SnowNLP
+* 文本总结 ✔️ 使用SnowNLP
+* 文本相似度 ✔️ 使用SnowNLP
+* 修改用户词典 ✔️
+* 修改停止词字典 ❌
+* 按词性过滤输出 ❌
+* 文本分类 ❌
+* 词向量 ❌
+* hanlp特有功能 ❌
 
 ## 各引擎对比
 
@@ -71,6 +70,8 @@ print(seg.sentiment_analysis("今天天气真好"))
 |附加功能|关键词提取|无|快速文件切分（多进程）|拼音转换、文本摘要、繁体转简体等|
 |内存占用|低|高（需加载大型模型文件）|中等|中等|
 |适用场景|通用文本、实时处理|学术研究、高精度分词需求|专业领域、文本处理|情感分析、文本增强（非专业分词）|
+
+功能代理机制：需要开启multi_engines=True
 
 模型选择建议
 ========
@@ -99,12 +100,12 @@ snownlp虽然可以修改词典，但是不会影响其行为，因为其有固�
 ========
 [示例运行脚本](https://github.com/Fuxuanmylove/han-seg/blob/main/example.py)
 
-使用配置文件来控制引擎的工作方式
 [示例配置文件](https://github.com/Fuxuanmylove/han-seg/blob/main/config.yaml)
 
 FAQ
 ========
 * Q：为什么thulac和pkuseg修改用户词典之后没有立即生效？A：需要调用他们的reload_engine()方法来重载用户词典。
+* Q：为什么snownlp修改用户词典后没有效果？A：snownlp的词典是固定的，无法修改。
 * Q：使用cut_file_fast方法时程序停不下来？A：确保主程序包裹在if __name__ == '__main__':中。
 * Q：使用cut_file_fast方法怎么反而速度更慢了？A：Windows平台上创建多进程开销很大。因此在文件规模并非极其大时，建议使用普通的cut_file方法。
 

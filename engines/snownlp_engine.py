@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from base import HanSegBase, HanSegError
 from snownlp import SnowNLP
 
@@ -7,19 +7,9 @@ class HanSegSnowNLP(HanSegBase):
     def __init__(self, engine_name: str, multi_engines: bool, user_dict: str, filt: bool, stop_words_path: str, local_config: dict):
         super().__init__(engine_name, multi_engines, user_dict, filt, stop_words_path, local_config)
 
-    def cut(self, text: str, with_position: bool = False) -> List[str]:
-        words = SnowNLP(text).words
-
-        if with_position:
-            words = HanSegBase._add_position(words)
-
-        if self.filt:
-            if with_position:
-                words = [(word, start, end) for word, start, end in words if word not in self.stop_words]
-            else:
-                words = [word for word in words if word not in self.stop_words]
-
-        return words
+    def cut(self, texts: List[str], with_position: bool = False) -> Union[List[List[str]], List[List[Tuple[str, int, int]]]]:
+        result = [SnowNLP(text).words for text in texts]
+        return self._deal_with_raw_cut_result(result, with_position)
 
     def pos(self, text: str) -> List[Tuple[str, str]]:
         if self.filt:
@@ -39,3 +29,6 @@ class HanSegSnowNLP(HanSegBase):
 
     def sentiment_analysis(self, text: str) -> float:
         return SnowNLP(text).sentiments
+
+    def reload_engine(self):
+        pass

@@ -42,9 +42,9 @@ class HanSeg:
             self.config.get(self.engine_name, {})
         )
 
-    def cut(self, text: str, with_position: bool = False) -> List[str]:
-        """Standard cut method, return a list of words."""
-        return self._engine.cut(text, with_position)
+    def cut(self, texts: List[str], with_position: bool = False) -> Union[List[List[str]], List[List[Tuple[str, int, int]]]]:
+        """Standard cut method, returns a list of tokens."""
+        return self._engine.cut(texts, with_position)
 
     def pos(self, text: str) -> List[Tuple[str, str]]:
         """Returns the tokens and their corresponding POS tags."""
@@ -105,6 +105,10 @@ class HanSeg:
     def words_count(self, input_file: str, output_file: str) -> None:
         """Count the words in a file, and save the result to output_file."""
         self._engine.words_count(input_file, output_file)
+        
+    def reload_engine(self) -> None:
+        """Reload the engine."""
+        self._engine.reload_engine()
 
     @staticmethod
     def pinyin(text: str) -> List[str]:

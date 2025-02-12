@@ -12,61 +12,65 @@ def test():
     seg2 = HanSeg('thulac', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg3 = HanSeg('pkuseg', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
     seg4 = HanSeg('snownlp', multi_engines=True, user_dict=USER_DICT, filt=True, stop_words_path=STOP_WORDS_PATH, config_path=CONFIG_PATH)
-    text = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。中国有句古话，识时务者为俊杰。"
+
+    text1 = "今天天气真好，适合出去散步。但是这并不代表我紫色心情不会开最大档。中国有句古话，识时务者为俊杰。"
     text2 = "不要笑挑战么，有点意思。哈基米哈基米哈基米，哈基米摸那咩路多。"
+    texts = ["今天天气真好，适合出去散步。", "不要笑挑战么，有点意思。", "但是这并不代表我紫色心情不会开最大档。", "中国有句古话，识时务者为俊杰。", "哈基米摸那咩路多。"]
+    
     tradition = "「繁體字」「繁體中文」的叫法在臺灣亦很常見。"
 
     print("拼音") # 基于SnowNLP的实现
-    print(HanSeg.pinyin(text))
+    print(HanSeg.pinyin(text1))
 
     print("繁体转简体") # 基于SnowNLP的实现
     print(HanSeg.t2s(tradition))
     
     print("相似度") # 基于SnowNLP的实现
-    print(HanSeg.similarity(text, text2))
+    print(HanSeg.similarity(text1, text2))
     
     print("摘要") # 基于SnowNLP的实现
-    print(HanSeg.summary(text, limit=2))
+    print(HanSeg.summary(text1, limit=2))
 
     seg1.suggest_freq(('今天', '天气'))
 
     print("增加单词")
     # jieba 的add_word调用的是jieba.add_word，不会作用在user_dict上。
-    seg1.add_word("哈基米", freq=100, flag='n')
+    seg1.add_word("哈基米", freq=100, flag='n') # 可以传入freq，因此也对用户词典最为敏感。
     # 下面三个引擎中，传入freq将会被忽略。
-    seg2.add_word("哈基米", flag='n')
+    seg2.add_word("哈基米", flag='n') # 调用 reload_engine 以即时生效
+    seg2.reload_engine()
     seg3.add_word("哈基米", flag='n')
     seg4.add_word("哈基米", flag='n')
     # 虽然可以让SnowNLP操作用户词典，但是这种行为不会影响SnowNLP的行为与结果。
 
     print("分词")
-    print(seg1.cut(text))
-    print(seg2.cut(text))
-    print(seg3.cut(text))
-    print(seg4.cut(text))
-    
-    print(seg1.cut(text, with_position=True))
-    print(seg2.cut(text, with_position=True))
-    print(seg3.cut(text, with_position=True))
-    print(seg4.cut(text, with_position=True))
+    print(seg1.cut(texts))
+    print(seg2.cut(texts))
+    print(seg3.cut(texts))
+    print(seg4.cut(texts))
+
+    print(seg1.cut(texts, with_position=True))
+    print(seg2.cut(texts, with_position=True))
+    print(seg3.cut(texts, with_position=True))
+    print(seg4.cut(texts, with_position=True))
 
     print("词性标注")
-    print(seg1.pos(text))
-    print(seg2.pos(text))
-    print(seg3.pos(text))
-    print(seg4.pos(text))
+    print(seg1.pos(text1))
+    print(seg2.pos(text1))
+    print(seg3.pos(text1))
+    print(seg4.pos(text1))
 
     print("关键词提取")
-    print(seg1.keywords(text, limit=2))
-    print(seg2.keywords(text, limit=2))
-    print(seg3.keywords(text, limit=2))
-    print(seg4.keywords(text, limit=2))
+    print(seg1.keywords(text1, limit=2))
+    print(seg2.keywords(text1, limit=2))
+    print(seg3.keywords(text1, limit=2))
+    print(seg4.keywords(text1, limit=2))
 
     print("情感分析")
-    print(seg1.sentiment_analysis(text))
-    print(seg2.sentiment_analysis(text))
-    print(seg3.sentiment_analysis(text))
-    print(seg4.sentiment_analysis(text))
+    print(seg1.sentiment_analysis(text1))
+    print(seg2.sentiment_analysis(text1))
+    print(seg3.sentiment_analysis(text1))
+    print(seg4.sentiment_analysis(text1))
 
     print("删除单词")
     # jieba 的del_word调用的是jieba.del_word，不会作用在user_dict上。

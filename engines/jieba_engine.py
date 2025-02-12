@@ -22,36 +22,39 @@ class HanSegJieba(HanSegBase):
         if self.cut_mode not in ('default', 'full', 'search'):
             raise HanSegError(f"Invalid cut mode: {self.cut_mode}.\nYou must set cut_mode to 'default', 'full' or 'search' in your config.")
 
-    def cut(self, text: str, with_position: bool = False) -> Union[List[str], List[Tuple[str, int, int]]]:
+    def cut(self, texts: List[str], with_position: bool = False) -> Union[List[List[str]], List[List[Tuple[str, int, int]]]]:
         if self.cut_mode == 'default':
             func = jieba.tokenize if with_position else jieba.cut
-            words = func(text, HMM=self.HMM)
+            result = [func(text, HMM=self.HMM) for text in texts]
         elif self.cut_mode == 'full':
-            words = jieba.cut(text, cut_all=True, HMM=self.HMM)
+            result = [jieba.cut(text, cut_all=True, HMM=self.HMM) for text in texts]
             if with_position:
-                start = 0
+                words_list = result[:]
                 result = []
-                prev = None
-                for word in words:
-                    if word == prev:
-                        start += 1
-                    left = text.find(word, start)
-                    right = left + len(word)
-                    result.append((word, left, right))
-                    start = left
-                    prev = word
-                words = result
+                for text, words in zip(texts, words_list):
+                    temp = []
+                    start = 0
+                    prev = None
+                    for word in words:
+                        if word == prev:
+                            start += 1
+                        left = text.find(word, start)
+                        right = left + len(word)
+                        temp.append((word, left, right))
+                        start = left
+                        prev = word
+                    result.append(temp)
         else:
             if with_position:
-                words = jieba.tokenize(text, mode='search', HMM=self.HMM)
+                result = [jieba.tokenize(text, mode='search', HMM=self.HMM) for text in texts]
             else:
-                words = jieba.cut_for_search(text, HMM=self.HMM)
-
+                result = [jieba.cut_for_search(text, HMM=self.HMM) for text in texts]
         if self.filt:
             if with_position:
-                return [(word, left, right) for word, left, right in words if word not in self.stop_words]
-            return [word for word in words if word not in self.stop_words]
-        return list(words)
+                result = [[(word, left, right) for word, left, right in words if word not in self.stop_words] for words in result]
+            else:
+                result = [[word for word in words if word not in self.stop_words] for words in result]
+        return result
 
     def pos(self, text: str) -> List[Tuple[str, str]]:
         if self.filt:
@@ -77,3 +80,6 @@ class HanSegJieba(HanSegBase):
         if self.cut_mode != 'default':
             raise HanSegError("Sentiment analysis is only supported when cut_mode is 'default' if you use jieba.")
         return super().sentiment_analysis(text)
+
+    def reload_engine(self):
+        pass
