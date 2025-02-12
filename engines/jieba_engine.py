@@ -1,6 +1,5 @@
 from typing import List, Tuple, Union
 import jieba
-from jieba import posseg as pseg
 from jieba import analyse
 from base import HanSegBase, HanSegError
 
@@ -57,6 +56,7 @@ class HanSegJieba(HanSegBase):
         return result
 
     def pos(self, text: str) -> List[Tuple[str, str]]:
+        from jieba import posseg as pseg
         if self.filt:
             return [(word, pos) for word, pos in pseg.cut(text, HMM=self.HMM) if word not in self.stop_words]
         return [(word, pos) for word, pos in pseg.lcut(text, HMM=self.HMM)]
@@ -72,11 +72,11 @@ class HanSegJieba(HanSegBase):
     def suggest_freq(self, words) -> None:
         jieba.suggest_freq(words, tune=self.tune)
 
-    def keywords(self, text: str, limit: int = 10) -> Union[List[str], List[Tuple[str, float]]]:
+    def keywords(self, text: str, limit: int = 10, with_weight: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
         if self.keywords_method == 'tfidf':
-            return analyse.extract_tags(text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
+            return analyse.extract_tags(text, topK=limit, withWeight=with_weight, allowPOS=self.allowPOS)
         elif self.keywords_method == 'textrank':
-            return analyse.textrank(text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
+            return analyse.textrank(text, topK=limit, withWeight=with_weight, allowPOS=self.allowPOS)
 
     def sentiment_analysis(self, text: str) -> float:
         if self.cut_mode != 'default':

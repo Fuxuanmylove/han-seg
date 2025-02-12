@@ -6,7 +6,6 @@ jieba:
   tune: true                  # 是否在add_word时自动调整词频
   dictionary: ""              # jieba引擎使用的词典路径
   cut_mode: "default"         # jieba引擎切分语句的方式 default / full / search
-  withWeight: false           # 提取关键词时是否返回权重
   allowPOS: "ns n vn v"       # 关键词提取时允许的词性 用空格分隔
   keywords_method: "textrank" # 关键词提取方法 textrank or tfidf
   idf_path: ""                # 使用tfidf方法提取关键词时使用的idf文件路径
@@ -14,7 +13,6 @@ jieba:
 thulac:
   model_path: ""              # thulac模型路径
   postag: true                # 是否进行词性标注
-  withWeight: false
   allowPOS: "ns n vn v"
   keywords_method: "textrank"
   idf_path: ""
@@ -22,7 +20,6 @@ thulac:
 pkuseg:
   model_name: "web"           # pkuseg使用的模型名称 default / web / tourism / medicine / news
   postag: true
-  withWeight: false
   allowPOS: "ns n vn v"
   keywords_method: "textrank"
   idf_path: ""
@@ -30,8 +27,8 @@ pkuseg:
 snownlp:
 
 hanlp:
-  tok_mode: "coarse"          # 分词模式 fine / coarse
-  withWeight: false
+  cut_mode: "coarse"          # 分词模式 fine / coarse
   allowPOS: "ns n vn v"
   keywords_method: "textrank"
   idf_path: ""
+  auth: ""                    # hanlp的授权码 为空时每分钟只能调用两次在线接口

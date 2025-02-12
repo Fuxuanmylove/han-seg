@@ -1,5 +1,5 @@
 from typing import List, Tuple, Union
-from base import HanSegBase, HanSegError
+from base import HanSegBase
 from snownlp import SnowNLP
 
 class HanSegSnowNLP(HanSegBase):
@@ -22,16 +22,13 @@ class HanSegSnowNLP(HanSegBase):
     def del_word(self, word: str) -> None:
         super().del_word(word)
 
-    def keywords(self, text: str, limit: int = 10) -> List[str]:
+    def keywords(self, text: str, limit: int = 10, with_weight: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
+        result = SnowNLP(text).keywords(limit)
         if self.filt:
-            return [word for word in SnowNLP(text).keywords(limit) if word not in self.stop_words]
-        return SnowNLP(text).keywords(limit)
-
-    def sentiment_analysis(self, text: str) -> str:
-        score = SnowNLP(text).sentiments
-        if score >= 0.5:
-            return f"{score:.5f} (Positive)"
-        return f"{(1 - score):.5f} (Negative)"
+            result = [word for word in result if word not in self.stop_words]
+        if with_weight:
+            result = [(word, None) for word in result]
+        return result
 
     def reload_engine(self):
         pass

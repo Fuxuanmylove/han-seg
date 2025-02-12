@@ -1,5 +1,6 @@
 # interface.py
 
+import logging
 from base import HanSegBase, HanSegError
 from typing import List, Tuple, Dict, Union
 from engines.jieba_engine import HanSegJieba
@@ -7,9 +8,7 @@ from engines.thulac_engine import HanSegThulac
 from engines.pkuseg_engine import HanSegPkuseg
 from engines.snownlp_engine import HanSegSnowNLP
 from engines.hanlp_engine import HanSegHanLP
-from snownlp import SnowNLP
-import hanlp
-from hanlp.pretrained.sts import STS_ELECTRA_BASE_ZH
+
 
 ENGINE_MAP: Dict[str, HanSegBase] = {
     'jieba': HanSegJieba,
@@ -20,7 +19,7 @@ ENGINE_MAP: Dict[str, HanSegBase] = {
 }
 
 class HanSeg:
-
+    """HanSeg interface class."""
     def __init__(self, engine_name: str = 'jieba', multi_engines: bool = True, user_dict: str = None, filt: bool = False, stop_words_path: str = None, config_path: str = "config.yaml"):
         """
         :param engine_name: jieba / thulac / pkuseg / snownlp / hanlp
@@ -69,13 +68,9 @@ class HanSeg:
         """Only for jieba"""
         self._engine.suggest_freq(words)
 
-    def keywords(self, text: str, limit: int = 10) -> Union[List[str], List[Tuple[str, float]]]:
+    def keywords(self, text: str, limit: int = 10, with_weight: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
         """Keywordss extract method, return a list of keywordss or (keywords, weight) tuples, depends on the config."""
-        return self._engine.keywords(text, limit)
-
-    def sentiment_analysis(self, text: str) -> float:
-        """Other engines will use snownlp if multi_engines=true."""
-        return self._engine.sentiment_analysis(text)
+        return self._engine.keywords(text, limit, with_weight)
 
     def cut_file(self, input_path: str, output_path: str, batch_size: int = 100) -> None:
         """
@@ -94,6 +89,66 @@ class HanSeg:
     def reload_engine(self) -> None:
         """Reload the engine."""
         self._engine.reload_engine()
+        
+    def set_model(self, tok_model: str, pos_model: str = None) -> None:
+        """Set the model for the engine."""
+        self._engine.set_model(tok_model, pos_model)
+
+    def sentiment_analysis(self, text: str) -> float:
+        """
+        Return the sentiment score of the text, based on hanlp_restful or SnowNLP.
+        
+        :return: a float in [-1, 1], where 1 means positive sentiment and -1 means negative sentiment.
+        """
+        try:
+            _client = self._get_hanlp_client()
+            return _client.sentiment_analysis(text)
+        except Exception as e:
+            logging.warning("hanlp_restful is not available, using SnowNLP instead.")
+            from snownlp import SnowNLP
+            return (SnowNLP(text).sentiments - 0.5) * 2
+        
+    def summary(self, text: str) -> List[str]:
+        """Return the summary of the text, based on hanlp_restful or SnowNLP."""
+        try:
+            _client = self._get_hanlp_client()
+            return _client.abstractive_summarization(text)
+        except Exception as e:
+            logging.warning("hanlp_restful is not available, using SnowNLP instead.")
+            from snownlp import SnowNLP
+            return SnowNLP(text).summary()
+
+    def text_classification(self, text: str, model='news_zh', limit: Union[bool, int] = 5, prob: bool = False) -> str:
+        """
+        Return the classification of the text, based on hanlp_restful.
+
+        :param text: the text to be classified
+        :param model: the model to be used, default is 'news_zh'
+        :param limit: the max number of results to be returned. Set it to True to return all results.
+        :param prob: whether to return the probability of each result.
+        """
+        _client = self._get_hanlp_client()
+        return _client.text_classification(text, model, limit, prob)
+
+    def similarity(self, text_pair: List[Tuple[str, str]]) -> List[float]:
+        """Return the similarity of text tuples."""
+        try:
+            _client = self._get_hanlp_client()
+            return _client.semantic_textual_similarity(text_pair)
+        except Exception as e:
+            logging.warning("hanlp_restful is not available, using local model instead.")
+            import hanlp
+            from hanlp.pretrained.sts import STS_ELECTRA_BASE_ZH
+            _sim = hanlp.load(STS_ELECTRA_BASE_ZH)
+            return _sim(text_pair)
+
+    def _get_hanlp_client(self):
+        hanlp_config = self.config.get('hanlp', {})
+        auth = hanlp_config.get('auth', None)
+        if not auth:
+            auth = None
+        from hanlp_restful import HanLPClient
+        return HanLPClient('https://www.hanlp.com/api', auth=auth, language='zh')
 
     @staticmethod
     def cut_file_fast(input_path: str, output_path: str, workers: int = 10, model_name: str = 'web', user_dict: str = 'default', postag: bool = False) -> None:
@@ -115,22 +170,13 @@ class HanSeg:
         )
 
     @staticmethod
-    def similarity(text_pair: List[Tuple[str, str]]) -> List[float]:
-        """Return the similarity of text tuples."""
-        _sim = hanlp.load(STS_ELECTRA_BASE_ZH)
-        return _sim(text_pair)
-
-    @staticmethod
     def pinyin(text: str) -> List[str]:
         """Return the pinyin of the text."""
+        from snownlp import SnowNLP
         return SnowNLP(text).pinyin
 
     @staticmethod
     def t2s(text: str) -> str:
         """Convert traditional Chinese to simplified Chinese."""
+        from snownlp import SnowNLP
         return SnowNLP(text).han
-
-    @staticmethod
-    def summary(text: str, limit: int = 5) -> List[str]:
-        """Return the summary of the text."""
-        return SnowNLP(text).summary(limit)

@@ -1,19 +1,14 @@
 # base.py
 
-from collections import Counter
 from typing import List, Tuple, Set, Union
 from jieba import analyse
-import os
 import yaml
+import os
 import logging
-from snownlp import SnowNLP
-import hanlp
-from hanlp.pretrained.sts import STS_ELECTRA_BASE_ZH
 
 
 class HanSegBase:
     def __init__(self, engine_name: str, multi_engines: bool, user_dict: str, filt: bool, stop_words_path: str, local_config: dict):
-
         self.local_config = local_config or {}
         self.engine_name = engine_name
         self.multi_engines = multi_engines
@@ -37,8 +32,6 @@ class HanSegBase:
             self.keywords_method = self.local_config.get('keywords_method', '').lower()
             if self.keywords_method not in ('tfidf', 'textrank') and self.multi_engines:
                 raise HanSegError(f"You must set keywords_method to 'tfidf' or 'textrank' in your config.")
-
-            self.withWeight = self.local_config.get('withWeight', False)
             self.allowPOS_config = self.local_config.get('allowPOS', None)
             self.allowPOS = tuple(self.allowPOS_config.split()) if self.allowPOS_config else ()
 
@@ -77,26 +70,15 @@ class HanSegBase:
     def suggest_freq(self, words) -> None:
         raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
-    def keywords(self, text: str, limit: int = 10) -> Union[List[str], List[Tuple[str, float]]]:
+    def keywords(self, text: str, limit: int = 10, with_weight: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
         if self.multi_engines:
             logging.info("Multi-engine mode is enabled. Using jieba to extract keywords.")
             processed_text = ' '.join(self.cut([text])[0])
-            print(processed_text)
             if self.keywords_method == 'tfidf':
-                return analyse.extract_tags(processed_text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
+                return analyse.extract_tags(processed_text, topK=limit, withWeight=with_weight, allowPOS=self.allowPOS)
             elif self.keywords_method == 'textrank':
-                return analyse.textrank(processed_text, topK=limit, withWeight=self.withWeight, allowPOS=self.allowPOS)
+                return analyse.textrank(processed_text, topK=limit, withWeight=with_weight, allowPOS=self.allowPOS)
         raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support keywords extract.")
-
-    def sentiment_analysis(self, text: str) -> float:
-        if self.multi_engines:
-            logging.info("Multi-engine mode is enabled. Using snownlp to perform sentiment analysis.")
-            processed_text = ' '.join(self.cut([text])[0])
-            score = SnowNLP(processed_text).sentiments
-            if score >= 0.5:
-                return f"{score:.5f} (Positive)"
-            return f"{(1 - score):.5f} (Negative)"
-        raise HanSegError(f"Multi-engine mode is disabled and {self.engine_name} does not support this method.")
 
     def cut_file(self, input_path: str, output_path: str, batch_size: int = 1000) -> None:
         with open(input_path, 'r', encoding='utf-8') as f_in, \
@@ -117,6 +99,7 @@ class HanSegBase:
                 f_out.writelines(lines)
 
     def words_count(self, input_file: str, output_file: str) -> None:
+        from collections import Counter
         word_counts = Counter()
         with open(input_file, 'r', encoding='utf-8') as f:
             for line in f:
@@ -130,6 +113,9 @@ class HanSegBase:
 
     def reload_engine(self) -> None:
         self._initialize_user_dict()
+    
+    def set_model(self, tok_model: str = None, pos_model: str = None) -> None:
+        raise HanSegError(f"Engine '{self.engine_name}' does not support this method.")
 
     def _clean_file(self, file_path: str) -> None:
         with open(file_path, 'r+', encoding='utf-8') as f:

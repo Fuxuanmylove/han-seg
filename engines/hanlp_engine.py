@@ -1,22 +1,25 @@
-from collections import Counter
+import logging
 from typing import List, Tuple, Union
 from base import HanSegBase, HanSegError
 from hanlp import hanlp
+from hanlp_restful import HanLPClient
 from hanlp.pretrained.tok import COARSE_ELECTRA_SMALL_ZH, FINE_ELECTRA_SMALL_ZH
 from hanlp.pretrained.pos import CTB9_POS_ELECTRA_SMALL
 
 class HanSegHanLP(HanSegBase):
     def __init__(self, engine_name: str, multi_engines: bool, user_dict: str, filt: bool, stop_words_path: str, local_config: dict):
         super().__init__(engine_name, multi_engines, user_dict, filt, stop_words_path, local_config)
-        self.tok_mode = local_config.get('tok_mode', 'coarse')
-        if self.tok_mode == 'coarse':
+        self.cut_mode = local_config.get('cut_mode', 'coarse')
+        if self.cut_mode == 'coarse':
             self._tok = hanlp.load(COARSE_ELECTRA_SMALL_ZH)
-        elif self.tok_mode == 'fine':
+        elif self.cut_mode == 'fine':
             self._tok = hanlp.load(FINE_ELECTRA_SMALL_ZH)
         else:
-            raise HanSegError(f'Invalid tok_mode: {self.tok_mode}')
+            raise HanSegError(f'Invalid cut_mode: {self.cut_mode}')
         self._pos = hanlp.load(CTB9_POS_ELECTRA_SMALL)
         self._set_custom_dict()
+        auth = local_config.get('auth', None)
+        self._client = HanLPClient('https://www.hanlp.com/api', auth=auth, language='zh')
 
     def cut(self, texts: List[str], with_position = False) -> Union[List[List[str]], List[List[Tuple[str, int, int]]]]:
         self._tok.config.output_spans = True if with_position else False
@@ -29,16 +32,43 @@ class HanSegHanLP(HanSegBase):
         return result
 
     def pos(self, text: str) -> List[Tuple[str, str]]:
-        words = self.cut([text])[0]
+        try:
+            if self.cut_mode == 'coarse':
+                raw_result = self._client(text, tasks=['tok/coarse', 'pos/ctb'], skip_tasks='tok/fine')
+            else:
+                raw_result = self._client(text, tasks='pos')
+            tokens_list = raw_result[f'tok/{self.cut_mode}']
+            tags_list = raw_result['pos/ctb']
+            result = []
+            for tokens, tags in zip(tokens_list, tags_list):
+                for token, tag in zip(tokens, tags):
+                    result.append((token, tag))
+        except Exception as e:
+            logging.warning(e)
+            logging.warning("hanlp_restful is not available, using local model instead.")
+            words = self.cut([text])[0]
+            tags = self._pos(words)
+            result = [(word, tag) for word, tag in zip(words, tags)]
         if self.filt:
-            return [(word, tag) for word, tag in zip(words, self._pos(words)) if word not in self.stop_words]
-        return [(word, tag) for word, tag in zip(words, self._pos(words))]
+            result = [(word, tag) for word, tag in result if word not in self.stop_words]
+        return result
+    
+    def keywords(self, text: str, limit: int = 10, with_weight: bool = False) -> Union[List[str], List[Tuple[str, float]]]:
+        result = self._client.keyphrase_extraction(text, topk=limit)
+        if with_weight:
+            result = [(word, weight) for word, weight in result.items()]
+        else:
+            result = list(result.keys())
+        return result
 
-    def set_model(self, tok_model: str = None) -> None:
+    def set_model(self, tok_model: str = None, pos_model: str = None) -> None:
         if tok_model is not None:
             self._tok = hanlp.load(tok_model)
+        if pos_model is not None:
+            self._pos = hanlp.load(pos_model)
 
     def words_count(self, input_file: str, output_file: str) -> None:
+        from collections import Counter
         word_counts = Counter()
         with open(input_file, 'r', encoding='utf-8') as f:
             texts = f.read()
