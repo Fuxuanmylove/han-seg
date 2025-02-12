@@ -24,12 +24,17 @@ pip install jieba thulac pkuseg snownlp hanlp tensorflow
 from interface import HanSeg
 seg = HanSeg('jieba', user_dict="user_dict.txt")
 
-print(seg.cut(["今天天气真好，适合出去散步。", "不要笑挑战么，有点意思。"]))
-print(seg.pos("今天天气真好"))
-print(seg.keywords("今天天气真好"))
-print(seg.sentiment_analysis("今天天气真好"))
-seg.add_word("word")
-seg.del_word("word")
+print(seg.cut([text1, text2]))
+print(seg.pos(text))
+print(seg.keywords(text))
+print(seg.sentiment_analysis(text))
+print(seg.text_classification(text))
+print(seg.summary(text))
+print(HanSeg.pinyin(text))
+print(HanSeg.t2s(text))
+print(seg.similarity([(text1, text2), (text3, text4)]))
+seg.add_word(word)
+seg.del_word(word)
 seg.cut_file(input_file, output_file)
 seg.words_count(input_file, output_file)
 ```
