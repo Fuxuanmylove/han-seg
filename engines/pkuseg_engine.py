@@ -47,12 +47,6 @@ class HanSegPkuseg(HanSegBase):
             raise HanSegError("You cannot modify the default user_dict.")
 
         super().del_word(word)
-
-    def keywords(self, text: str, limit: int = 10) -> Union[List[str], List[Tuple[str, float]]]:
-        return super().keywords(text, limit)
-        
-    def sentiment_analysis(self, text: str) -> float:
-        return super().sentiment_analysis(text)
     
     def _reload_engine(self) -> None:
         self._pkuseg = pkuseg(
